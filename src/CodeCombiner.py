@@ -175,7 +175,7 @@ class FileCombinerApp:
 
     def combine_files(self):
         if not self.file_paths:
-            messagebox.showwarning("No Files", "Please drag and drop files first.")
+            messagebox.showwarning("No Files", "Please add files first.")
             return
 
         combined_content = ""
