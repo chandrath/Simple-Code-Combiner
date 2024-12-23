@@ -9,7 +9,7 @@ import re
 class FileCombinerApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("File Combiner")
+        self.root.title("Code Combiner")
         self.root.geometry("400x400")
         self.config_file = "config.json"
 
@@ -152,7 +152,7 @@ class FileCombinerApp:
         self.file_menu.entryconfig("Save Combined File", state=tk.DISABLED)
 
     def show_about(self):
-        messagebox.showinfo("About Us", "File Combiner v1.0\nA simple tool to combine code files.")
+        messagebox.showinfo("About Us", "Code Combiner v0.1\n A simple tool to combine code files. \n\n By Shree \n https://github.com/chandrath \n ")
 
     def toggle_always_on_top(self):
         self.root.attributes('-topmost', self.always_on_top_var.get())
