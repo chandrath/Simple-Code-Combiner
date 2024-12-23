@@ -1,16 +1,40 @@
 import os
 import tkinter as tk
-from tkinter import filedialog, messagebox, Menu
+from tkinter import filedialog, messagebox, Menu, Toplevel, Label
 from tkinterdnd2 import DND_FILES, TkinterDnD
 import ttkbootstrap as ttk
 import json
 import re
+import webbrowser
+
+class HyperlinkManager:
+    def __init__(self, text):
+        self.text = text
+        self.text.tag_config("hyper", foreground="blue", underline=1)
+        self.text.tag_bind("hyper", "<Button-1>", self._click)
+
+        self.reset()
+
+    def reset(self):
+        self.links = {}
+
+    def add(self, action):
+        tag = "hyper-%d" % len(self.links)
+        self.links[tag] = action
+        return "hyper", tag
+
+    def _click(self, event):
+        for tag, action in self.links.items():
+            if tag in self.text.tag_names(tk.CURRENT):
+                webbrowser.open(action)
+                return
+
 
 class FileCombinerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Code Combiner")
-        self.root.geometry("400x400")
+        self.root.geometry("300x410")
         self.config_file = "config.json"
 
         # Set the application icon
@@ -160,7 +184,18 @@ class FileCombinerApp:
         self.file_menu.entryconfig("Save Combined File", state=tk.DISABLED)
 
     def show_about(self):
-        messagebox.showinfo("About Us", "Code Combiner v0.1\n A simple tool to combine code files. \n\n By Shree \n https://github.com/chandrath \n ")
+        about_window = Toplevel(self.root)
+        about_window.title("About Us")
+
+        text = tk.Text(about_window, wrap=tk.WORD, height=7, width=50)
+        text.pack(padx=10, pady=10)
+        text.insert(tk.END, "Code Combiner v0.1\nA simple tool to combine code files.\n\nDeveloped By: Shree\n")
+        text.config(state=tk.DISABLED)
+        text.config(state=tk.NORMAL)
+        link = HyperlinkManager(text)
+        text.insert(tk.END, "https://github.com/chandrath/Simple-Code-Combiner", link.add("https://github.com/chandrath/Simple-Code-Combiner"))
+        text.config(state=tk.DISABLED)
+
 
     def toggle_always_on_top(self):
         self.root.attributes('-topmost', self.always_on_top_var.get())
