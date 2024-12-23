@@ -121,12 +121,13 @@ _A modified version of the hook file that resolves certain issues can be used fr
 3. **Build with PyInstaller:** Open a terminal or command prompt in the same directory where your project files are located. Then, execute the following PyInstaller command:
 
    ```bash
-   pyinstaller -F --additional-hooks-dir=. --onefile --windowed CodeCombiner.py
+   pyinstaller -F --additional-hooks-dir=. --onefile --windowed --icon=app.ico CodeCombiner.py
    ```
 
    - **`-F` or `--onefile`**: Creates a single, self-contained executable file.
    - **`--additional-hooks-dir=.`**: Tells PyInstaller to use the `hook-tkinterdnd2.py` file in the current directory to correctly include `tkinterdnd2` files.
    - **`--windowed`**: Creates an executable without a console window, suitable for GUI applications.
+   - **`--icon=app.ico`**: For the exe icon.
    - **`CodeCombiner.py`**: Specifies your main Python script file.
 
 4. **Locate the Executable:** After a successful build, the executable file will be located in the `dist` subdirectory within your project directory.
