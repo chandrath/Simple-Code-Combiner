@@ -13,6 +13,13 @@ class FileCombinerApp:
         self.root.geometry("400x400")
         self.config_file = "config.json"
 
+        # Set the application icon
+        try:
+            self.root.iconbitmap("app.ico")  # Load the icon
+        except tk.TclError:
+            print("Could not load app.ico. Ensure it is in the same directory as the script.")
+            # You can also set a default icon here if desired.
+
         # Default supported extensions
         self.default_supported_extensions = [
             '.py', '.js', '.java', '.kt', '.cs', '.cpp', '.h',
