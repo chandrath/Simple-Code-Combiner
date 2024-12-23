@@ -67,7 +67,7 @@ To run the program:
     ```
 3.  Run the application:
     ```bash
-    python main.py
+    python CodeCombiner.py
     ```
 
 ## Usage
