@@ -9,28 +9,34 @@ class FileCombinerApp:
         self.root = root
         self.root.title("File Combiner")
         self.root.geometry("400x400")
-        
+
         # Create a menu bar
         self.menu_bar = Menu(root)
         self.root.config(menu=self.menu_bar)
 
-        # Create a "File" menu
+        # Create "File" Menu
         self.file_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label="File", menu=self.file_menu)
-        
-        # Add "Always on Top" option
-        self.always_on_top_var = tk.BooleanVar()
-        self.file_menu.add_checkbutton(label="Always on Top", variable=self.always_on_top_var, command=self.toggle_always_on_top)
+        self.save_combined_file_option = self.file_menu.add_command(label="Save Combined File", command=self.save_combined_file, state=tk.DISABLED)
 
-        # Add "About Us" option
-        self.file_menu.add_command(label="About Us", command=self.show_about)
+        # Create "Preferences" Menu
+        self.preferences_menu = Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label="Preferences", menu=self.preferences_menu)
+        self.always_on_top_var = tk.BooleanVar()
+        self.preferences_menu.add_checkbutton(label="Always on Top", variable=self.always_on_top_var, command=self.toggle_always_on_top)
+
+        # Create "Help" Menu
+        self.help_menu = Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label="Help", menu=self.help_menu)
+        self.help_menu.add_command(label="About Us", command=self.show_about)
+
 
         # Create a frame for drag and drop
         self.frame = ttk.Frame(root, padding=10)
         self.frame.pack(fill=tk.BOTH, expand=True)
 
         # Create a label for instructions
-        self.label = ttk.Label(self.frame, text="Drag and drop files here", font=("Arial", 14))
+        self.label = ttk.Label(self.frame, text="Drag and drop code files here", font=("Arial", 14))
         self.label.pack(pady=20)
 
         # Create a text area to show dropped files
@@ -52,6 +58,19 @@ class FileCombinerApp:
         # Initialize the list to hold file paths
         self.file_paths = []
 
+        # Initialize the list of supported extensions
+        self.supported_extensions = [
+            '.txt', '.md', '.py', '.js', '.java', '.kt', '.cs', '.cpp', '.h',
+            '.php', '.rb', '.go', '.swift', '.html', '.htm', '.css', '.dart',
+            '.jsx', '.tsx', '.ts', '.sh', '.sql', '.r', '.m', '.c', '.hpp',
+            '.json', '.xml', '.yaml', '.toml', '.ini', '.gradle', '.groovy',
+            '.lua', '.scala', '.pl', '.vb', '.vbs', '.asm', '.pas', '.f', '.for',
+             '.rs', '.erl', '.hs', '.clj', '.lisp', '.scm', '.ml', '.fs',
+              '.cob', '.coffee', '.tcl', '.ex', '.exs', '.dart', '.vue', '.svelte',
+             '.bat', '.ps1', '.powershell', '.gitignore', '.dockerfile'
+         ]
+
+
         # Set up drag and drop
         self.setup_drag_and_drop()
 
@@ -63,9 +82,11 @@ class FileCombinerApp:
     def on_drop(self, event):
         files = event.data.split()
         for file in files:
-            if os.path.isfile(file):
+            if os.path.isfile(file) and os.path.splitext(file)[1].lower() in self.supported_extensions:
                 self.file_paths.append(file)
                 self.text_area.insert(tk.END, f"{file}\n")
+            else:
+                messagebox.showwarning("Invalid File Type", "Only code files are supported.")
 
     def combine_files(self):
         if not self.file_paths:
@@ -83,19 +104,20 @@ class FileCombinerApp:
         self.text_area.delete(1.0, tk.END)  # Clear previous content
         self.text_area.insert(tk.END, combined_content)
 
-        # Enable the copy button after combining files
+        # Enable the copy button and save option after combining files
         self.copy_button.config(state=tk.NORMAL)
+        self.root.nametowidget(self.save_combined_file_option).config(state=tk.NORMAL)
 
     def copy_to_clipboard(self):
         combined_content = self.text_area.get(1.0, tk.END)
         self.root.clipboard_clear()  # Clear the clipboard
         self.root.clipboard_append(combined_content.strip())  # Append the combined content
         messagebox.showinfo("Copied", "Combined text copied to clipboard!")
-
     def clear_text(self):
         self.text_area.delete(1.0, tk.END)  # Clear the text area
         self.file_paths.clear()  # Clear the file paths
         self.copy_button.config(state=tk.DISABLED)  # Disable the copy button
+        self.root.nametowidget(self.save_combined_file_option).config(state=tk.DISABLED)  # Disable the save option
 
     def show_about(self):
         messagebox.showinfo("About Us", "File Combiner v1.0\nA simple tool to combine code files.")
@@ -105,6 +127,20 @@ class FileCombinerApp:
             self.root.attributes('-topmost', True)
         else:
             self.root.attributes('-topmost', False)
+
+    def save_combined_file(self):
+        combined_content = self.text_area.get(1.0, tk.END).strip()
+        if not combined_content:
+            messagebox.showwarning("No Content", "There is no combined content to save.")
+            return
+
+        # Prompt the user to save the combined content to a file
+        file_path = filedialog.asksaveasfilename(defaultextension=".txt",
+                                                   filetypes=[("Text files", "*.txt"), ("Markdown files", "*.md"), ("All files", "*.*")])
+        if file_path:
+            with open(file_path, 'w') as f:
+                f.write(combined_content)
+            messagebox.showinfo("Saved", f"Combined content saved to {file_path}")
 
 if __name__ == "__main__":
     # Create the main TkinterDnD window
