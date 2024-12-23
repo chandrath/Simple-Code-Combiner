@@ -59,7 +59,7 @@ class FileCombinerApp:
             '.lua', '.scala', '.pl', '.vb', '.vbs', '.asm', '.pas', '.f', '.for',
             '.rs', '.erl', '.hs', '.clj', '.lisp', '.scm', '.ml', '.fs',
             '.cob', '.coffee', '.tcl', '.ex', '.exs', '.vue', '.svelte',
-            '.bat', '.ps1', '.powershell', '.gitignore', '.dockerfile'
+            '.bat', '.ps1', '.powershell', '.gitignore', '.dockerfile', '.txt'
         ]
         # Load configuration
         self.load_config()
