@@ -17,8 +17,8 @@ In a development environment, managing multiple code files can be a cumbersome t
 
 ## Features
 
-- ✅ **Simple GUI:** Intuitive drag-and-drop interface for easy file selection.
 - ✅ **Effortless Combination:** Combine various code files into a single output with ease, automatically labeling each file with its extension for clarity and organization.
+- ✅ **Simple GUI:** Intuitive drag-and-drop interface for easy file selection.
 - ✅ **Flexible File Support:** Accepts a wide range of programming language and code-related file extensions.
 - ✅ **Customizable File Types:** Allows users to add or remove supported file extensions, saving preferences to a config file.
 - ✅ **Copy to Clipboard:** Copies the combined content to the clipboard with one click.
