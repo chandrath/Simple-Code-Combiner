@@ -27,7 +27,7 @@ class FileCombinerApp:
         self.combine_button.pack(pady=5)
 
         # Create a button to copy combined text to clipboard
-        self.copy_button = ttk.Button(self.frame, text="Copy to Clipboard", command=self.copy_to_clipboard)
+        self.copy_button = ttk.Button(self.frame, text="Copy to Clipboard", command=self.copy_to_clipboard, state=tk.DISABLED)
         self.copy_button.pack(pady=5)
 
         # Initialize the list to hold file paths
@@ -63,6 +63,9 @@ class FileCombinerApp:
         # Display combined content in the text area
         self.text_area.delete(1.0, tk.END)  # Clear previous content
         self.text_area.insert(tk.END, combined_content)
+
+        # Enable the copy button after combining files
+        self.copy_button.config(state=tk.NORMAL)
 
     def copy_to_clipboard(self):
         combined_content = self.text_area.get(1.0, tk.END)
