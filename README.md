@@ -26,7 +26,7 @@
 
 ### Simple User Interface
 
-[Code Combiner UI](https://i.imgur.com/aMpxral.png)
+![Code Combiner UI](https://i.imgur.com/aMpxral.png)
 
 ---
 
