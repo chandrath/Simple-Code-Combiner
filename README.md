@@ -42,6 +42,11 @@ To run the program:
 
 ### Installation
 
+#### **Run as Executable (Recommended)**
+
+1. Download the latest release from the [Releases Page](https://github.com/chandrath/Simple-Code-Combiner/releases).
+2. Run the **`CodeCombiner.exe`** file.
+
 #### **Run from Source**
 
 1.  Clone this repository:
