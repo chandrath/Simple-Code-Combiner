@@ -1,18 +1,20 @@
 import os
 import tkinter as tk
-from tkinter import filedialog, messagebox, Menu, Toplevel, Label
+from tkinter import filedialog, messagebox, Menu, Toplevel
 from tkinterdnd2 import DND_FILES, TkinterDnD
 import ttkbootstrap as ttk
 import json
 import re
-import webbrowser
+import logging
+
 
 class HyperlinkManager:
     def __init__(self, text):
         self.text = text
         self.text.tag_config("hyper", foreground="blue", underline=1)
+        self.text.tag_bind("hyper", "<Enter>", self._enter)
+        self.text.tag_bind("hyper", "<Leave>", self._leave)
         self.text.tag_bind("hyper", "<Button-1>", self._click)
-
         self.reset()
 
     def reset(self):
@@ -22,6 +24,12 @@ class HyperlinkManager:
         tag = "hyper-%d" % len(self.links)
         self.links[tag] = action
         return "hyper", tag
+
+    def _enter(self, event):
+        self.text.config(cursor="hand2")
+
+    def _leave(self, event):
+        self.text.config(cursor="")
 
     def _click(self, event):
         for tag, action in self.links.items():
@@ -37,23 +45,21 @@ class FileCombinerApp:
         self.root.geometry("300x410")
         self.config_file = "config.json"
 
-        # Set the application icon
-        try:
-            self.root.iconbitmap("app.ico")  # Load the icon
-        except tk.TclError:
-            print("Could not load app.ico. Ensure it is in the same directory as the script.")
-            # You can also set a default icon here if desired.
+        # Set up logging
+        logging.basicConfig(filename="file_combiner.log", level=logging.INFO,
+                            format="%(asctime)s - %(levelname)s - %(message)s")
+        logging.info("Application started")
 
         # Default supported extensions
         self.default_supported_extensions = [
-            '.py', '.js', '.java', '.kt', '.cs', '.cpp', '.h',
+            '.md', '.py', '.js', '.java', '.kt', '.cs', '.cpp', '.h',
             '.php', '.rb', '.go', '.swift', '.html', '.htm', '.css', '.dart',
             '.jsx', '.tsx', '.ts', '.sh', '.sql', '.r', '.m', '.c', '.hpp',
             '.json', '.xml', '.yaml', '.toml', '.ini', '.gradle', '.groovy',
             '.lua', '.scala', '.pl', '.vb', '.vbs', '.asm', '.pas', '.f', '.for',
             '.rs', '.erl', '.hs', '.clj', '.lisp', '.scm', '.ml', '.fs',
             '.cob', '.coffee', '.tcl', '.ex', '.exs', '.vue', '.svelte',
-            '.bat', '.ps1', '.powershell', '.gitignore', '.dockerfile', '.kt',
+            '.bat', '.ps1', '.powershell', '.gitignore', '.dockerfile'
         ]
         # Load configuration
         self.load_config()
@@ -65,7 +71,6 @@ class FileCombinerApp:
         # Create "File" Menu
         self.file_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label="File", menu=self.file_menu)
-        self.file_menu.add_command(label="Open Files", command=self.open_files)  # Added Open Files option
         self.file_menu.add_command(label="Save Combined File", command=self.save_combined_file, state=tk.DISABLED)
         self.file_menu.add_separator()
         self.file_menu.add_command(label="Exit", command=self.root.quit)
@@ -91,8 +96,8 @@ class FileCombinerApp:
         self.label.pack(pady=20)
 
         # Create a text area to show dropped files
-        self.text_area = tk.Text(self.frame, height=10, width=50)
-        self.text_area.pack(pady=10)
+        self.text_area = tk.Text(self.frame, height=10, width=50, wrap=tk.WORD)
+        self.text_area.pack(pady=10, fill=tk.BOTH, expand=True)
 
         # Create a button to combine files
         self.combine_button = ttk.Button(self.frame, text="Combine Files", command=self.combine_files)
@@ -119,12 +124,17 @@ class FileCombinerApp:
                 config = json.load(f)
                 self.supported_extensions = config.get('supported_extensions', self.default_supported_extensions)
         except (FileNotFoundError, json.JSONDecodeError):
+            logging.warning("Config file not found or invalid. Using default extensions.")
             self.supported_extensions = self.default_supported_extensions
 
     def save_config(self):
         # Save supported_extensions to config file
-         with open(self.config_file, 'w') as f:
+        try:
+            with open(self.config_file, 'w') as f:
                 json.dump({'supported_extensions': self.supported_extensions}, f, indent=4)
+                logging.info("Configuration saved.")
+        except Exception as e:
+            logging.error(f"Error saving config: {e}")
 
     def setup_drag_and_drop(self):
         # Register the main window for drag and drop
@@ -144,34 +154,14 @@ class FileCombinerApp:
                         self.file_paths.append(file)
                         self.text_area.insert(tk.END, f"{file}\n")
                     else:
-                        self.text_area.insert(tk.END, f"Error: Unsupported extension - {file}\n"
-                                              "If it's a code file, use 'Preferences -> Manage Extensions' to add it.\n", "error")
-                        self.text_area.tag_config("error", foreground="red")
+                        self.display_error(f"Unsupported extension - {file}. If it's a code file, use 'Preferences -> Manage Extensions' to add it.")
                 else:
-                    self.text_area.insert(tk.END, f"Error: No extension - {file}\n", "error")
-                    self.text_area.tag_config("error", foreground="red")
-    def open_files(self):
-        filetypes = [("Code Files", f"*{ext}") for ext in self.supported_extensions]
-        file_paths = filedialog.askopenfilenames(filetypes=filetypes)
+                    self.display_error(f"No extension - {file}")
 
-        for file_path in file_paths:
-           if os.path.isfile(file_path):
-                # Extract extension using regex
-                file_name = os.path.basename(file_path)
-                match = re.search(r'\.[a-zA-Z0-9_]+$', file_name)
-                if match:
-                    ext = match.group(0).lower()
-                    if ext in self.supported_extensions:
-                        self.file_paths.append(file_path)
-                        self.text_area.insert(tk.END, f"{file_path}\n")
-                    else:
-                        self.text_area.insert(tk.END, f"Error: Unsupported extension - {file_path}\n"
-                                              "If it's a code file, use 'Preferences -> Manage Extensions' to add it.\n", "error")
-                        self.text_area.tag_config("error", foreground="red")
-                else:
-                    self.text_area.insert(tk.END, f"Error: No extension - {file_path}\n", "error")
-                    self.text_area.tag_config("error", foreground="red")
-
+    def display_error(self, message):
+        self.text_area.insert(tk.END, f"Error: {message}\n", "error")
+        self.text_area.tag_config("error", foreground="red")
+        logging.error(message)
 
     def combine_files(self):
         if not self.file_paths:
@@ -180,10 +170,14 @@ class FileCombinerApp:
 
         combined_content = ""
         for file_path in self.file_paths:
-            file_name = os.path.basename(file_path)
-            combined_content += f"# {file_name}\n"
-            with open(file_path, 'r') as f:
-                combined_content += f.read() + "\n\n"
+            try:
+                file_name = os.path.basename(file_path)
+                combined_content += f"# {file_name}\n"
+                with open(file_path, 'r') as f:
+                    combined_content += f.read() + "\n\n"
+            except Exception as e:
+                self.display_error(f"Error reading file - {file_path}: {e}")
+                continue
 
         # Display combined content in the text area
         self.text_area.delete(1.0, tk.END)
@@ -199,14 +193,18 @@ class FileCombinerApp:
         self.root.clipboard_clear()
         self.root.clipboard_append(combined_content.strip())
         messagebox.showinfo("Copied", "Combined text copied to clipboard!")
+        logging.info("Combined content copied to clipboard.")
 
     def clear_text(self):
         self.text_area.delete(1.0, tk.END)
         self.file_paths.clear()
         self.copy_button.config(state=tk.DISABLED)
         self.file_menu.entryconfig("Save Combined File", state=tk.DISABLED)
+        logging.info("Text area cleared.")
 
     def show_about(self):
+        import webbrowser
+
         about_window = Toplevel(self.root)
         about_window.title("About Us")
 
@@ -218,9 +216,9 @@ class FileCombinerApp:
         link = HyperlinkManager(text)
         text.insert(tk.END, "https://github.com/chandrath/Simple-Code-Combiner", link.add("https://github.com/chandrath/Simple-Code-Combiner"))
         text.config(state=tk.DISABLED)
-
     def toggle_always_on_top(self):
         self.root.attributes('-topmost', self.always_on_top_var.get())
+        logging.info(f"Always on top set to {self.always_on_top_var.get()}.")
 
     def save_combined_file(self):
         combined_content = self.text_area.get(1.0, tk.END).strip()
@@ -231,9 +229,13 @@ class FileCombinerApp:
         file_path = filedialog.asksaveasfilename(defaultextension=".txt",
                                                  filetypes=[("Text files", "*.txt"), ("Markdown files", "*.md"), ("All files", "*.*")])
         if file_path:
-            with open(file_path, 'w') as f:
-                f.write(combined_content)
-            messagebox.showinfo("Saved", f"Combined content saved to {file_path}")
+            try:
+                with open(file_path, 'w') as f:
+                    f.write(combined_content)
+                messagebox.showinfo("Saved", f"Combined content saved to {file_path}")
+                logging.info(f"Combined content saved to {file_path}")
+            except Exception as e:
+                logging.error(f"Error saving file: {e}")
 
     def manage_extensions(self):
         extensions_window = tk.Toplevel(self.root)
@@ -279,10 +281,11 @@ class FileCombinerApp:
                     messagebox.showwarning("Invalid Extension", "Invalid characters in extension")
                     return
                 if new_ext not in self.supported_extensions:
-                    self.supsported_extensions.append(new_ext)
+                    self.supported_extensions.append(new_ext)
                     self.save_config()
                     listbox.insert(tk.END, new_ext)
                     extension_entry.delete(0, tk.END)
+                    logging.info(f"Added new extension: {new_ext}")
                 else:
                     messagebox.showwarning("Duplicate Extension", f"{new_ext} is already supported!")
 
