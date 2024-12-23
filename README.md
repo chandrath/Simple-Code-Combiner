@@ -16,9 +16,10 @@
 - ✅ **Simple GUI:** Intuitive drag-and-drop interface for easy file selection.
 - ✅ **Flexible File Support:** Accepts a wide range of programming language and code-related file extensions.
 - ✅ **Customizable File Types:** Allows users to add or remove supported file extensions, saving preferences to a config file.
-- ✅ **Inline Error Reporting:** Displays clear error messages directly in the text area for unsupported files, guiding the user to configure extensions.
 - ✅ **Copy to Clipboard:** Copies the combined content to the clipboard with one click.
 - ✅ **Save Combined Output:** Saves the combined text to a single txt file.
+- ✅ **Always on Top:** Keeps the application window in front of all other windows.
+- ✅ **Inline Error Reporting:** Displays clear error messages directly in the text area for unsupported files, guiding the user to configure extensions.
 
 ---
 
@@ -26,7 +27,7 @@
 
 ### Simple User Interface
 
-![Code Combiner UI](https://i.imgur.com/aMpxral.png)
+![Code Combiner UI](https://i.imgur.com/iDTrivs.png)
 
 ---
 

@@ -65,6 +65,7 @@ class FileCombinerApp:
         # Create "File" Menu
         self.file_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label="File", menu=self.file_menu)
+        self.file_menu.add_command(label="Open Files", command=self.open_files)  # Added Open Files option
         self.file_menu.add_command(label="Save Combined File", command=self.save_combined_file, state=tk.DISABLED)
         self.file_menu.add_separator()
         self.file_menu.add_command(label="Exit", command=self.root.quit)
@@ -149,6 +150,28 @@ class FileCombinerApp:
                 else:
                     self.text_area.insert(tk.END, f"Error: No extension - {file}\n", "error")
                     self.text_area.tag_config("error", foreground="red")
+    def open_files(self):
+        filetypes = [("Code Files", f"*{ext}") for ext in self.supported_extensions]
+        file_paths = filedialog.askopenfilenames(filetypes=filetypes)
+
+        for file_path in file_paths:
+           if os.path.isfile(file_path):
+                # Extract extension using regex
+                file_name = os.path.basename(file_path)
+                match = re.search(r'\.[a-zA-Z0-9_]+$', file_name)
+                if match:
+                    ext = match.group(0).lower()
+                    if ext in self.supported_extensions:
+                        self.file_paths.append(file_path)
+                        self.text_area.insert(tk.END, f"{file_path}\n")
+                    else:
+                        self.text_area.insert(tk.END, f"Error: Unsupported extension - {file_path}\n"
+                                              "If it's a code file, use 'Preferences -> Manage Extensions' to add it.\n", "error")
+                        self.text_area.tag_config("error", foreground="red")
+                else:
+                    self.text_area.insert(tk.END, f"Error: No extension - {file_path}\n", "error")
+                    self.text_area.tag_config("error", foreground="red")
+
 
     def combine_files(self):
         if not self.file_paths:
@@ -189,13 +212,12 @@ class FileCombinerApp:
 
         text = tk.Text(about_window, wrap=tk.WORD, height=7, width=50)
         text.pack(padx=10, pady=10)
-        text.insert(tk.END, "Code Combiner v0.1\nA simple tool to combine code files.\n\nDeveloped By: Shree\n")
+        text.insert(tk.END, "Code Combiner v0.8\nA simple tool to combine code files.\n\nDeveloped By: Shree\n")
         text.config(state=tk.DISABLED)
         text.config(state=tk.NORMAL)
         link = HyperlinkManager(text)
         text.insert(tk.END, "https://github.com/chandrath/Simple-Code-Combiner", link.add("https://github.com/chandrath/Simple-Code-Combiner"))
         text.config(state=tk.DISABLED)
-
 
     def toggle_always_on_top(self):
         self.root.attributes('-topmost', self.always_on_top_var.get())
@@ -257,7 +279,7 @@ class FileCombinerApp:
                     messagebox.showwarning("Invalid Extension", "Invalid characters in extension")
                     return
                 if new_ext not in self.supported_extensions:
-                    self.supported_extensions.append(new_ext)
+                    self.supsported_extensions.append(new_ext)
                     self.save_config()
                     listbox.insert(tk.END, new_ext)
                     extension_entry.delete(0, tk.END)
