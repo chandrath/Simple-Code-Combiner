@@ -119,7 +119,8 @@ class FileCombinerApp:
                         self.file_paths.append(file)
                         self.text_area.insert(tk.END, f"{file}\n")
                     else:
-                        self.text_area.insert(tk.END, f"Error: Unsupported extension - {file}\n", "error")
+                        self.text_area.insert(tk.END, f"Error: Unsupported extension - {file}\n"
+                                              "If it's a code file, use 'Preferences -> Manage Extensions' to add it.\n", "error")
                         self.text_area.tag_config("error", foreground="red")
                 else:
                     self.text_area.insert(tk.END, f"Error: No extension - {file}\n", "error")
