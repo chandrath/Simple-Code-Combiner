@@ -210,7 +210,7 @@ class FileCombinerApp:
 
         text = tk.Text(about_window, wrap=tk.WORD, height=7, width=50)
         text.pack(padx=10, pady=10)
-        text.insert(tk.END, "Code Combiner v0.8\nA simple tool to combine code files.\n\nDeveloped By: Shree\n")
+        text.insert(tk.END, "Code Combiner v0.8.1\nA simple tool to combine code files.\n\nDeveloped By: Shree\n")
         text.config(state=tk.DISABLED)
         text.config(state=tk.NORMAL)
         link = HyperlinkManager(text)
