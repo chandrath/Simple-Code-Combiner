@@ -105,6 +105,7 @@ To create a standalone executable for the `CodeCombiner` application (which uses
 **Steps:**
 
 1.  **Prepare Project Files:** Ensure your main project file (`main.py`) and the hook file (`hook-tkinterdnd2.py`) are in the **same directory**.
+
 2.  **Obtain `hook-tkinterdnd2.py`:** Download `hook-tkinterdnd2.py` and save it in the same directory as your `main.py` file. The original file (under MIT License) can be obtained from:
 
 ```
@@ -113,17 +114,20 @@ To create a standalone executable for the `CodeCombiner` application (which uses
 
     *Note: If you are working with an updated version or fork, make sure to use the corresponding hook file (if needed).*
 
-_A modified version of the hook file that resolves certain issues can be used from the project folder_ 3. **Build with PyInstaller:** Open a terminal or command prompt in the same directory where your project files are located. Then, execute the following PyInstaller command:
+_A modified version of the hook file that resolves certain issues can be used from the project folder_
 
-    ```bash
-    pyinstaller -F --additional-hooks-dir=. --onefile --windowed CodeCombiner.py
-    ```
-    *   **`-F` or `--onefile`**: Creates a single, self-contained executable file.
-    *   **`--additional-hooks-dir=.`**: Tells PyInstaller to use the `hook-tkinterdnd2.py` file in the current directory to correctly include `tkinterdnd2` files.
-    *   **`--windowed`**: Creates an executable without a console window, suitable for GUI applications.
-    *   **`CodeCombiner.py`**: Specifies your main Python script file.
+3. **Build with PyInstaller:** Open a terminal or command prompt in the same directory where your project files are located. Then, execute the following PyInstaller command:
 
-4.  **Locate the Executable:** After a successful build, the executable file will be located in the `dist` subdirectory within your project directory.
+   ```bash
+   pyinstaller -F --additional-hooks-dir=. --onefile --windowed CodeCombiner.py
+   ```
+
+   - **`-F` or `--onefile`**: Creates a single, self-contained executable file.
+   - **`--additional-hooks-dir=.`**: Tells PyInstaller to use the `hook-tkinterdnd2.py` file in the current directory to correctly include `tkinterdnd2` files.
+   - **`--windowed`**: Creates an executable without a console window, suitable for GUI applications.
+   - **`CodeCombiner.py`**: Specifies your main Python script file.
+
+4. **Locate the Executable:** After a successful build, the executable file will be located in the `dist` subdirectory within your project directory.
 
 **Explanation of the Process**
 
