@@ -13,11 +13,11 @@
 
 In a development environment, managing multiple code files can be a cumbersome task. The "Simple Code Combiner" app streamlines your workflow by allowing you to effortlessly combine various code files into a single output while labeling each file with its extension, all with just one click. Whether you're preparing scripts for deployment, consolidating code for testing, Feeding your code to LLMs for retrieval-augmented generation (RAG)., or simply organizing your projects, this free and open-source GUI tool enhances efficiency and reduces the risk of errors associated with manual copying and pasting. With support for a wide range of programming languages and customizable file types, it adapts to your specific needs, making it an essential addition to any developer's toolkit.
 
----
+<small><i>This application has been tested and produced in a Windows environment. If you are using a different platform (Linux or Mac), you can technically build the application in the respective environment using the provided source code.</i></small>
 
 ## Features
 
-- ✅ **Streamlined for AI:** With a single click, all your code is gathered in one location, simplifying the process of providing it to AI.
+- ✅ **Streamlined for AI:** With a single click, all your code is gathered in one location, simplifying the process of feeding it to AI / LLM.
 - ✅ **Simple GUI:** Intuitive drag-and-drop interface for easy file selection.
 - ✅ **Automatic Labeling:** Automatically labels each file with its extension for clarity and organization, making it easier for AI to identify each file.
 - ✅ **Flexible File Support:** Accepts a wide range of programming languages and code-related file extensions.
