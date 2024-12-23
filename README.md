@@ -47,6 +47,8 @@ To run the program:
 1.  Download the latest release from the [Releases Page](https://github.com/chandrath/Simple-Code-Combiner/releases).
 2.  Run the **`CodeCombiner.exe`** file.
 
+**Note Regarding Antivirus:** Some antivirus programs might flag the executable as a potential threat. This is a common occurrence for applications created with tools like PyInstaller. If this happens, you can usually choose to "allow" or "whitelist" the application in your antivirus settings. The source code is available for review in this repository.
+
 #### **Run from Source**
 
 1.  Clone this repository:
