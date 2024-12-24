@@ -42,7 +42,7 @@ class FileCombinerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Code Combiner")
-        self.root.geometry("300x410")
+        self.root.geometry("300x450")
         self.config_file = "config.json"
 
         # Set up logging
@@ -71,6 +71,8 @@ class FileCombinerApp:
         # Create "File" Menu
         self.file_menu = Menu(self.menu_bar, tearoff=0)
         self.menu_bar.add_cascade(label="File", menu=self.file_menu)
+        self.file_menu.add_command(label="Open Files", command=self.open_files)
+        self.file_menu.add_command(label="Open Folder", command=self.open_folder)
         self.file_menu.add_command(label="Save Combined File", command=self.save_combined_file, state=tk.DISABLED)
         self.file_menu.add_separator()
         self.file_menu.add_command(label="Exit", command=self.root.quit)
@@ -93,7 +95,11 @@ class FileCombinerApp:
 
         # Create a label for instructions
         self.label = ttk.Label(self.frame, text="Drag and drop code files here", font=("Arial", 14))
-        self.label.pack(pady=20)
+        self.label.pack(pady=10)
+
+        # Add button to open files/folders
+        self.open_button = ttk.Button(self.frame, text="Or click here to open files/folders", command=self.open_files_or_folder, style="Link.TButton")
+        self.open_button.pack()
 
         # Create a text area to show dropped files
         self.text_area = tk.Text(self.frame, height=10, width=50, wrap=tk.WORD)
@@ -142,21 +148,47 @@ class FileCombinerApp:
         self.root.dnd_bind('<<Drop>>', self.on_drop)
 
     def on_drop(self, event):
-        files = self.root.tk.splitlist(event.data)  # Handles file paths with spaces correctly
+        paths = self.root.tk.splitlist(event.data)  # Handles file paths with spaces correctly
+        for path in paths:
+            if os.path.isdir(path):
+                self.import_folder(path)
+            elif os.path.isfile(path):
+                self.import_file(path)
+
+    def import_folder(self, folder_path):
+        for root, _, files in os.walk(folder_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                self.import_file(file_path)
+
+    def import_file(self, file):
+        file_name = os.path.basename(file)
+        match = re.search(r'\.[a-zA-Z0-9_]+$', file_name)
+        if match:
+            ext = match.group(0).lower()
+            if ext in self.supported_extensions:
+                self.file_paths.append(file)
+                self.text_area.insert(tk.END, f"{file}\n")
+            else:
+                self.display_error(f"Unsupported extension - {file}. If it's a code file, use 'Preferences -> Manage Extensions' to add it.")
+        else:
+            self.display_error(f"No extension - {file}")
+
+    def open_files(self):
+        files = filedialog.askopenfilenames(filetypes=[("All files", "*.*")])
         for file in files:
-            if os.path.isfile(file):
-                # Extract extension using regex
-                file_name = os.path.basename(file)
-                match = re.search(r'\.[a-zA-Z0-9_]+$', file_name)
-                if match:
-                    ext = match.group(0).lower()
-                    if ext in self.supported_extensions:
-                        self.file_paths.append(file)
-                        self.text_area.insert(tk.END, f"{file}\n")
-                    else:
-                        self.display_error(f"Unsupported extension - {file}. If it's a code file, use 'Preferences -> Manage Extensions' to add it.")
-                else:
-                    self.display_error(f"No extension - {file}")
+            self.import_file(file)
+
+    def open_folder(self):
+        folder = filedialog.askdirectory()
+        if folder:
+            self.import_folder(folder)
+
+    def open_files_or_folder(self):
+        if messagebox.askyesno("Open Option", "Would you like to open a folder?\n(Click 'No' to open files instead)"):
+            self.open_folder()
+        else:
+            self.open_files()
 
     def display_error(self, message):
         self.text_area.insert(tk.END, f"Error: {message}\n", "error")
@@ -216,6 +248,7 @@ class FileCombinerApp:
         link = HyperlinkManager(text)
         text.insert(tk.END, "https://github.com/chandrath/Simple-Code-Combiner", link.add("https://github.com/chandrath/Simple-Code-Combiner"))
         text.config(state=tk.DISABLED)
+
     def toggle_always_on_top(self):
         self.root.attributes('-topmost', self.always_on_top_var.get())
         logging.info(f"Always on top set to {self.always_on_top_var.get()}.")
@@ -291,6 +324,7 @@ class FileCombinerApp:
 
         add_button = ttk.Button(entry_frame, text="Add", command=add_new_extension)
         add_button.pack(side=tk.RIGHT)
+
 
 if __name__ == "__main__":
     root = TkinterDnD.Tk()
