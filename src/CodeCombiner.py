@@ -6,7 +6,7 @@ import ttkbootstrap as ttk
 import json
 import re
 import logging
-
+import ai_integration  # Import the new module for AI integration
 
 class HyperlinkManager:
     def __init__(self, text):
@@ -34,9 +34,9 @@ class HyperlinkManager:
     def _click(self, event):
         for tag, action in self.links.items():
             if tag in self.text.tag_names(tk.CURRENT):
+                import webbrowser
                 webbrowser.open(action)
                 return
-
 
 class FileCombinerApp:
     def __init__(self, root):
@@ -44,24 +44,14 @@ class FileCombinerApp:
         self.root.title("Code Combiner")
         self.root.geometry("300x450")
         self.config_file = "config.json"
+        self.ai_provider_config = None  # Configuration for AI providers
 
         # Set up logging
         logging.basicConfig(filename="file_combiner.log", level=logging.INFO,
                             format="%(asctime)s - %(levelname)s - %(message)s")
         logging.info("Application started")
 
-        # Default supported extensions
-        self.default_supported_extensions = [
-            '.md', '.py', '.js', '.java', '.kt', '.cs', '.cpp', '.h',
-            '.php', '.rb', '.go', '.swift', '.html', '.htm', '.css', '.dart',
-            '.jsx', '.tsx', '.ts', '.sh', '.sql', '.r', '.m', '.c', '.hpp',
-            '.json', '.xml', '.yaml', '.toml', '.ini', '.gradle', '.groovy',
-            '.lua', '.scala', '.pl', '.vb', '.vbs', '.asm', '.pas', '.f', '.for',
-            '.rs', '.erl', '.hs', '.clj', '.lisp', '.scm', '.ml', '.fs',
-            '.cob', '.coffee', '.tcl', '.ex', '.exs', '.vue', '.svelte',
-            '.bat', '.ps1', '.powershell', '.gitignore', '.dockerfile', '.txt'
-        ]
-        # Load configuration
+        # Load configuration for supported extensions and AI provider
         self.load_config()
 
         # Create a menu bar
@@ -83,6 +73,7 @@ class FileCombinerApp:
         self.always_on_top_var = tk.BooleanVar()
         self.preferences_menu.add_checkbutton(label="Always on Top", variable=self.always_on_top_var, command=self.toggle_always_on_top)
         self.preferences_menu.add_command(label="Manage Extensions", command=self.manage_extensions)
+        self.preferences_menu.add_command(label="LLM or AI Configuration", command=self.manage_ai_integration)
 
         # Create "Help" Menu
         self.help_menu = Menu(self.menu_bar, tearoff=0)
@@ -113,6 +104,10 @@ class FileCombinerApp:
         self.copy_button = ttk.Button(self.frame, text="Copy to Clipboard", command=self.copy_to_clipboard, state=tk.DISABLED)
         self.copy_button.pack(pady=5)
 
+        # Create an AI summarized button
+        self.ai_summary_button = ttk.Button(self.frame, text="AI Summarized", command=self.show_ai_summary, state=tk.DISABLED)
+        self.ai_summary_button.pack(pady=5)
+
         # Create a clear button
         self.clear_button = ttk.Button(self.frame, text="Clear", command=self.clear_text, style='Danger.TButton')
         self.clear_button.pack(pady=5)
@@ -124,31 +119,33 @@ class FileCombinerApp:
         self.setup_drag_and_drop()
 
     def load_config(self):
-        # Load supported_extensions from config file if it exists, otherwise use default
         try:
             with open(self.config_file, 'r') as f:
                 config = json.load(f)
-                self.supported_extensions = config.get('supported_extensions', self.default_supported_extensions)
+                self.supported_extensions = config.get('supported_extensions', [])
+                self.ai_provider_config = config.get('ai_provider_config', {})
         except (FileNotFoundError, json.JSONDecodeError):
-            logging.warning("Config file not found or invalid. Using default extensions.")
-            self.supported_extensions = self.default_supported_extensions
+            logging.warning("Config file not found or invalid. Using default settings.")
+            self.supported_extensions = []
+            self.ai_provider_config = {}
 
     def save_config(self):
-        # Save supported_extensions to config file
         try:
             with open(self.config_file, 'w') as f:
-                json.dump({'supported_extensions': self.supported_extensions}, f, indent=4)
+                json.dump({
+                    'supported_extensions': self.supported_extensions,
+                    'ai_provider_config': self.ai_provider_config
+                }, f, indent=4)
                 logging.info("Configuration saved.")
         except Exception as e:
             logging.error(f"Error saving config: {e}")
 
     def setup_drag_and_drop(self):
-        # Register the main window for drag and drop
         self.root.drop_target_register(DND_FILES)
         self.root.dnd_bind('<<Drop>>', self.on_drop)
 
     def on_drop(self, event):
-        paths = self.root.tk.splitlist(event.data)  # Handles file paths with spaces correctly
+        paths = self.root.tk.splitlist(event.data)
         for path in paths:
             if os.path.isdir(path):
                 self.import_folder(path)
@@ -170,7 +167,7 @@ class FileCombinerApp:
                 self.file_paths.append(file)
                 self.text_area.insert(tk.END, f"{file}\n")
             else:
-                self.display_error(f"Unsupported extension - {file}. If it's a code file, use 'Preferences -> Manage Extensions' to add it.")
+                self.display_error(f"Unsupported extension - {file}")
         else:
             self.display_error(f"No extension - {file}")
 
@@ -211,13 +208,12 @@ class FileCombinerApp:
                 self.display_error(f"Error reading file - {file_path}: {e}")
                 continue
 
-        # Display combined content in the text area
         self.text_area.delete(1.0, tk.END)
         self.text_area.insert(tk.END, combined_content)
         self.text_area.tag_remove("error", "1.0", tk.END)
 
-        # Enable the copy button and save option after combining files
         self.copy_button.config(state=tk.NORMAL)
+        self.ai_summary_button.config(state=tk.NORMAL)
         self.file_menu.entryconfig("Save Combined File", state=tk.NORMAL)
 
     def copy_to_clipboard(self):
@@ -231,19 +227,38 @@ class FileCombinerApp:
         self.text_area.delete(1.0, tk.END)
         self.file_paths.clear()
         self.copy_button.config(state=tk.DISABLED)
+        self.ai_summary_button.config(state=tk.DISABLED)
         self.file_menu.entryconfig("Save Combined File", state=tk.DISABLED)
         logging.info("Text area cleared.")
 
+    def show_ai_summary(self):
+        combined_content = self.text_area.get(1.0, tk.END).strip()
+        if not combined_content:
+            messagebox.showwarning("No Content", "There is no combined content to summarize.")
+            return
+
+        try:
+            summary = ai_integration.summarize_text(combined_content)
+            if summary:
+                self.display_popup("AI Summary", summary)
+        except Exception as e:
+            self.display_error(f"Error summarizing text: {e}")
+
+    def display_popup(self, title, content):
+        popup = Toplevel(self.root)
+        popup.title(title)
+        text_widget = tk.Text(popup, wrap=tk.WORD, height=10, width=50)
+        text_widget.insert(tk.END, content)
+        text_widget.pack(padx=10, pady=10)
+        text_widget.config(state=tk.DISABLED)
+
     def show_about(self):
         import webbrowser
-
         about_window = Toplevel(self.root)
         about_window.title("About Us")
-
         text = tk.Text(about_window, wrap=tk.WORD, height=7, width=50)
         text.pack(padx=10, pady=10)
         text.insert(tk.END, "Code Combiner v0.8.1\nA simple tool to combine code files.\n\nDeveloped By: Shree\n")
-        text.config(state=tk.DISABLED)
         text.config(state=tk.NORMAL)
         link = HyperlinkManager(text)
         text.insert(tk.END, "https://github.com/chandrath/Simple-Code-Combiner", link.add("https://github.com/chandrath/Simple-Code-Combiner"))
@@ -325,6 +340,8 @@ class FileCombinerApp:
         add_button = ttk.Button(entry_frame, text="Add", command=add_new_extension)
         add_button.pack(side=tk.RIGHT)
 
+    def manage_ai_integration(self):
+        ai_integration.show_configuration_dialog(self)
 
 if __name__ == "__main__":
     root = TkinterDnD.Tk()
