@@ -98,7 +98,7 @@ class FileCombinerApp:
         self.label.pack(pady=10)
 
         # Add button to open files/folders
-        self.open_button = ttk.Button(self.frame, text="Or click here to open files/folders", command=self.open_files_or_folder, style="Link.TButton")
+        self.open_button = ttk.Button(self.frame, text="Or click here to open files/folder", command=self.open_files_or_folder, style="Link.TButton")
         self.open_button.pack()
 
         # Create a text area to show dropped files
