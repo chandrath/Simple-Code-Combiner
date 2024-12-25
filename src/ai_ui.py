@@ -52,6 +52,7 @@ class AIConfigurationDialog:
         self.parent = parent
         self.dialog = Toplevel(self.parent)
         self.dialog.title("LLM or AI Configuration")
+        self.dialog.geometry("500x400")
 
         self.config_file = "llm_config.json"
         self.pref_file = "preferences.json"
@@ -61,11 +62,14 @@ class AIConfigurationDialog:
 
         self.available_providers = sorted(list(self.models_data.keys()))
         self.provider_var = StringVar(self.dialog)
-        self.provider_var.set(self.all_prefs.get("current_provider", self.available_providers[0] if self.available_providers else ""))
-        self.provider_var.trace_add('write', self.update_fields)
+        self.current_provider = self.all_prefs.get("current_provider", self.available_providers[0] if self.available_providers else "")
+        self.provider_var.set(self.current_provider)
+        self.provider_var.trace_add('write', self.on_provider_change)
+
 
         self.config_frames = {}
         self.config_widgets = {}
+        self.current_model_label = ttk.Label(self.dialog, text="", foreground="red")
 
         self.create_widgets()
         self.load_initial_values()
@@ -73,7 +77,8 @@ class AIConfigurationDialog:
     def create_widgets(self):
         # Provider Selection
         ttk.Label(self.dialog, text="Select Provider").grid(row=0, column=0, sticky="w", padx=10, pady=5)
-        ttk.OptionMenu(self.dialog, self.provider_var, *self.available_providers).grid(row=0, column=1, sticky="ew", padx=10, pady=5)
+        self.provider_dropdown = ttk.OptionMenu(self.dialog, self.provider_var, *self.available_providers, command=self.on_provider_change)
+        self.provider_dropdown.grid(row=0, column=1, sticky="ew", padx=10, pady=5)
 
         # Configuration Frames (will be populated dynamically)
         for i, provider_name in enumerate(self.available_providers):
@@ -83,22 +88,25 @@ class AIConfigurationDialog:
             self.populate_config_frame(provider_name, frame)
             frame.grid_remove() # Initially hide all frames
 
+        self.current_model_label.grid(row=2, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
         # Save Button
-        ttk.Button(self.dialog, text="Save", command=self.save_configuration).grid(row=2, column=0, columnspan=2, pady=10)
+        ttk.Button(self.dialog, text="Save", command=self.save_configuration).grid(row=3, column=0, columnspan=2, pady=10)
 
     def populate_config_frame(self, provider_name, frame):
         config_widgets = {}
         current_config = self.all_configs.get(provider_name, {})
-
+        
         if provider_name in self.models_data:
             # Model Dropdown
             model_frame = ttk.Frame(frame)
             ttk.Label(model_frame, text="Model").pack(side="left", padx=5)
             sorted_models = sorted(self.models_data[provider_name]['models'])
             model_var = StringVar(self.dialog)
-            model_var.set(current_config.get("model", sorted_models[0] if sorted_models else ""))
-            model_dropdown = ttk.Combobox(model_frame, textvariable=model_var, values=sorted_models, state="readonly")
+            initial_model = current_config.get("model", sorted_models[0] if sorted_models else "")
+            model_var.set(initial_model)
+            model_dropdown = ttk.Combobox(model_frame, textvariable=model_var, values=sorted_models, state="readonly", name="model")
             model_dropdown.pack(side="left", fill="x", expand=True, padx=5)
+            model_dropdown.bind("<<ComboboxSelected>>", self.update_model_display)
             model_frame.pack(fill="x", padx=10, pady=5)
             config_widgets["model"] = model_dropdown
 
@@ -110,19 +118,19 @@ class AIConfigurationDialog:
                 entry_frame = ttk.Frame(frame)
                 ttk.Label(entry_frame, text=label_text).pack(side="left", padx=5)
                 entry_value = current_config.get(field_name, "")
-                entry = ttk.Entry(entry_frame)
+                entry = ttk.Entry(entry_frame, name = field_name)
                 entry.insert(0, entry_value)
                 entry.pack(side="left", fill="x", expand=True, padx=5)
                 entry_frame.pack(fill="x", padx=10, pady=5)
                 config_widgets[field_name] = entry
-
+                
             elif key_suffix.endswith("_tokens_field") and needs_field is True: # Handle token limit fields
                 field_name = key_suffix.replace("_field", "")
                 label_text = field_name.replace("_", " ").title()
                 entry_frame = ttk.Frame(frame)
                 ttk.Label(entry_frame, text=label_text).pack(side="left", padx=5)
                 entry_value = current_config.get(field_name, "")
-                entry = ttk.Entry(entry_frame)
+                entry = ttk.Entry(entry_frame, name = field_name)
                 entry.insert(0, entry_value)
                 entry.pack(side="left", fill="x", expand=True, padx=5)
                 entry_frame.pack(fill="x", padx=10, pady=5)
@@ -130,18 +138,29 @@ class AIConfigurationDialog:
 
         self.config_widgets[provider_name] = config_widgets
 
-    def load_initial_values(self):
-        # Set the initially visible fields based on the default provider
-        self.update_fields()
+    def update_model_display(self, event=None):
+         provider = self.provider_var.get()
+         selected_model = None
+         if provider in self.config_widgets and "model" in self.config_widgets[provider]:
+            selected_model = self.config_widgets[provider]["model"].get()
+         if selected_model:
+             self.current_model_label.config(text=f"Current Model: {selected_model}")
+         else:
+            self.current_model_label.config(text="No model selected")
 
-    def update_fields(self, *args):
+    def load_initial_values(self):
+        self.on_provider_change()
+        self.update_model_display()
+
+    def on_provider_change(self, *args):
         selected_provider = self.provider_var.get()
         for provider, frame in self.config_frames.items():
             if provider == selected_provider:
                 frame.grid()
             else:
                 frame.grid_remove()
-
+        self.update_model_display()
+                
     def save_configuration(self):
         selected_provider = self.provider_var.get()
         self.all_configs["current_provider"] = selected_provider
@@ -150,10 +169,10 @@ class AIConfigurationDialog:
         if selected_provider in self.config_widgets:
             config = {}
             for key, widget in self.config_widgets[selected_provider].items():
-                if isinstance(widget, ttk.Entry):
-                    config[key] = widget.get()
-                elif isinstance(widget, ttk.Combobox):
-                    config[key] = widget.get()
+                  if isinstance(widget, ttk.Entry):
+                      config[key] = widget.get()
+                  elif isinstance(widget, ttk.Combobox):
+                      config[key] = widget.get()
             self.all_configs[selected_provider] = config
             self.all_prefs[selected_provider] = config
 

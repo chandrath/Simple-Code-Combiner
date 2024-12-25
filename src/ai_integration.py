@@ -1,8 +1,6 @@
+# ai_integration.py
 import json
 import logging
-import tkinter as tk
-from tkinter import Toplevel, StringVar, Label, Entry, Button, OptionMenu, messagebox, Frame, Checkbutton
-import ttkbootstrap as ttk
 import os
 
 class AIProvider:
@@ -87,13 +85,6 @@ def load_llm_config(config_file="llm_config.json"):
         logging.error(f"Error loading LLM config: {e}")
         return {}
 
-def save_llm_config(config, config_file="llm_config.json"):
-    try:
-        with open(config_file, 'w') as f:
-            json.dump(config, f, indent=4)
-    except Exception as e:
-        logging.error(f"Failed to save LLM configuration: {e}")
-
 def load_preferences(pref_file="preferences.json"):
     try:
         with open(pref_file, 'r') as f:
@@ -120,188 +111,6 @@ def load_models(models_file=None):
         logging.error(f"Error loading models file: {e}")
         return {}
 
-def show_configuration_dialog(app):
-    config_file = "llm_config.json"
-    pref_file = "preferences.json"
-    all_configs = load_llm_config(config_file)
-    all_prefs = load_preferences(pref_file)
-    models_data = load_models()
-
-    dialog = Toplevel(app.root)
-    dialog.title("LLM or AI Configuration")
-
-    available_providers = ["OpenAI", "Groq", "Mistral AI", "Anthropic", "Local LLM", "Google", "Manual"]
-    provider_var = StringVar(dialog)
-    provider_var.set(all_prefs.get("current_provider", "OpenAI"))
-
-    config_frames = {}
-    config_widgets = {}
-    current_model_label = Label(dialog, text="", foreground="red")
-    
-    def save_configuration():
-        selected_provider = provider_var.get()
-        all_configs["current_provider"] = selected_provider
-        all_prefs["current_provider"] = selected_provider
-        
-        for provider in available_providers:
-             if provider in config_widgets:
-                config_value = get_current_config(provider)
-                all_configs[provider] = config_value
-                all_prefs[provider] = config_value
-        save_llm_config(all_configs, config_file)
-        save_preferences(all_prefs, pref_file)
-        messagebox.showinfo("Success", "LLM configuration saved successfully!")
-        dialog.destroy()
-
-    def get_current_config(provider):
-        config = {}
-        if provider in config_widgets:
-            for key, widget in config_widgets[provider].items():
-                if isinstance(widget, Entry):
-                    config[key] = widget.get()
-                elif isinstance(widget, ttk.Combobox):
-                     config[key] = widget.get()
-                elif isinstance(widget, tk.BooleanVar):
-                    config[key] = widget.get()
-        return config
-
-    def update_fields(provider):
-        for p, frame in config_frames.items():
-            frame.grid_remove()
-        if provider in config_frames:
-            config_frames[provider].grid(row=1, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
-        elif provider == "Manual":
-            for frame in config_frames.values():
-                frame.grid(row=1, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
-        show_hide_fields(provider)
-        update_model_display()
-        
-    def load_and_set_model(provider, model_dropdown, models_list):
-            initial_model_value = all_prefs.get(provider, {}).get("model", "")
-            if initial_model_value in models_list:
-                model_dropdown.set(initial_model_value)
-            elif models_list:
-                model_dropdown.set(models_list[0])
-        
-    def update_model_display():
-        provider = provider_var.get()
-        selected_model = None
-        if provider in config_widgets and "model" in config_widgets[provider]:
-            selected_model = config_widgets[provider]["model"].get()
-        if selected_model:
-            current_model_label.config(text=f"Current Model: {selected_model}")
-        else:
-            current_model_label.config(text="No model selected")
-    
-    def show_hide_fields(provider):
-        if provider in config_widgets and provider in models_data:
-            for key, widget in config_widgets[provider].items():
-                field_setting_key = f"{key.replace('_field','')}_field"
-                if key in ["api_key", "api_base", "api_organisation", "input_token_limit", "anthropic_max_tokens" ]:
-                    if field_setting_key in models_data[provider]:
-                       widget.config(state=tk.NORMAL if models_data[provider].get(field_setting_key, False) else tk.DISABLED)
-                    else:
-                        widget.config(state=tk.DISABLED)
-
-                if key == "input_token_limit":
-                   if  "input_token_limit_enabled" in config_widgets[provider]:
-                      input_token_limit_enabled = config_widgets[provider]["input_token_limit_enabled"]
-                      widget.config(state=tk.NORMAL if input_token_limit_enabled.get() else tk.DISABLED)
-                if key == "anthropic_max_tokens":
-                   if  "anthropic_max_tokens_enabled" in config_widgets[provider]:
-                     anthropic_max_tokens_enabled = config_widgets[provider]["anthropic_max_tokens_enabled"]
-                     widget.config(state=tk.NORMAL if anthropic_max_tokens_enabled.get() else tk.DISABLED)
-
-    # Provider Selection
-    Label(dialog, text="Select Provider").grid(row=0, column=0, sticky="w", padx=10, pady=5)
-    OptionMenu(dialog, provider_var, *available_providers, command=update_fields).grid(row=0, column=1, sticky="ew", padx=10, pady=5)
-    
-    # Configuration Frames
-    for provider_name in available_providers:
-        frame = Frame(dialog)
-        config_frames[provider_name] = frame
-        current_config = all_configs.get(provider_name, {})
-        current_pref = all_prefs.get(provider_name, {})
-        widget_holder = {}
-
-        if provider_name in models_data:
-            # Model Dropdown Frame
-            model_frame = Frame(frame)
-            Label(model_frame, text="Model").pack(side="left", padx=5)
-            
-            # Sort models alphabetically
-            sorted_models = sorted(models_data[provider_name]['models'])
-            model_dropdown = ttk.Combobox(model_frame, values=sorted_models, name="model")
-            model_dropdown.pack(side="left", padx=5, fill="x", expand=True)
-            model_dropdown.bind("<<ComboboxSelected>>", lambda event, provider=provider_name: update_model_display())
-
-            # Load and set model
-            load_and_set_model(provider_name, model_dropdown, sorted_models)
-            
-            model_frame.pack(fill="x", padx=10, pady=5)
-            widget_holder["model"] = model_dropdown
-        
-        # Common fields for all models
-        api_key_frame = Frame(frame)
-        Label(api_key_frame, text="API Key").pack(side="left", padx=5)
-        api_key_entry = Entry(api_key_frame, name="api_key")
-        api_key_entry.insert(0, current_config.get("api_key", ""))
-        api_key_entry.pack(side="left", fill="x", expand=True, padx=5)
-        api_key_frame.pack(fill="x", padx=10, pady=5)
-        widget_holder["api_key"] = api_key_entry
-
-        # API Base URL Frame
-        api_base_frame = Frame(frame)
-        Label(api_base_frame, text="API Base URL").pack(side="left", padx=5)
-        api_base_value = current_config.get("api_base", "")
-        api_base_entry = Entry(api_base_frame, name="api_base")
-        if provider_name == "Groq" and not api_base_value:
-            api_base_value = "https://api.groq.com/openai/v1"
-        api_base_entry.insert(0, api_base_value)
-        api_base_entry.pack(side="left", fill="x", expand=True, padx=5)
-        api_base_frame.pack(fill="x", padx=10, pady=5)
-        widget_holder["api_base"] = api_base_entry
-
-        # API Organisation Entry Frame
-        api_organisation_frame = Frame(frame)
-        Label(api_organisation_frame, text="API Organisation").pack(side="left", padx=5)
-        api_organisation_entry = Entry(api_organisation_frame, name="api_organisation")
-        api_organisation_entry.insert(0, current_config.get("api_organisation", ""))
-        api_organisation_entry.pack(side="left", fill="x", expand=True, padx=5)
-        api_organisation_frame.pack(fill="x", padx=10, pady=5)
-        widget_holder["api_organisation"] = api_organisation_entry
-        
-        # Input Token limit frame
-        input_token_limit_frame = Frame(frame)
-        input_token_limit_enable_var = tk.BooleanVar(value=current_config.get("input_token_limit_enabled", False))
-        Checkbutton(input_token_limit_frame, text="Enable Input Token Limit", variable=input_token_limit_enable_var, command=lambda: show_hide_fields(provider_var.get())).pack(side="left", padx=5)
-        Label(input_token_limit_frame, text="Input Token Limit").pack(side="left", padx=5)
-        input_token_limit_entry = Entry(input_token_limit_frame, name="input_token_limit")
-        input_token_limit_entry.insert(0, current_config.get("input_token_limit", "1000"))
-        input_token_limit_entry.pack(side="left", fill="x", expand=True, padx=5)
-        input_token_limit_frame.pack(fill="x", padx=10, pady=5)
-        widget_holder["input_token_limit"] = input_token_limit_entry
-        widget_holder["input_token_limit_enabled"] = input_token_limit_enable_var
-
-        # Anothorpic Max token frame
-        anthropic_max_token_frame = Frame(frame)
-        anthropic_max_tokens_enable_var = tk.BooleanVar(value=current_config.get("anthropic_max_tokens_enabled", False))
-        Checkbutton(anthropic_max_token_frame, text="Enable Max Output Token Limit", variable=anthropic_max_tokens_enable_var, command=lambda: show_hide_fields(provider_var.get())).pack(side="left", padx=5)
-        Label(anthropic_max_token_frame, text="Max Output Tokens").pack(side="left", padx=5)
-        max_tokens_entry = Entry(anthropic_max_token_frame, name="anthropic_max_tokens")
-        max_tokens_entry.insert(0, current_config.get("anthropic_max_tokens", "1024"))
-        max_tokens_entry.pack(side="left", fill="x", expand=True, padx=5)
-        anthropic_max_token_frame.pack(fill="x", padx=10, pady=5)
-        widget_holder["anthropic_max_tokens"] = max_tokens_entry
-        widget_holder["anthropic_max_tokens_enabled"] = anthropic_max_tokens_enable_var
-        config_widgets[provider_name] = widget_holder
-    
-    current_model_label.pack(side="bottom", fill="x", padx=10, pady=5)
-    update_fields(provider_var.get())
-    update_model_display()
-    show_hide_fields(provider_var.get())
-    Button(dialog, text="Save", command=save_configuration).grid(row=2, column=0, columnspan=2, pady=10)
-
 def summarize_text(text, config_file="llm_config.json", pref_file="preferences.json", app=None):
     all_prefs = load_preferences(pref_file)
     provider_name = all_prefs.get("current_provider", "OpenAI")
@@ -311,7 +120,7 @@ def summarize_text(text, config_file="llm_config.json", pref_file="preferences.j
 
     if app:
       # Create and display a popup window
-      popup = Toplevel(app.root)
+      popup = tk.Toplevel(app.root)
       popup.title("AI Summary")
       # Get the main window's position
       app_x = app.root.winfo_x()
@@ -331,7 +140,7 @@ def summarize_text(text, config_file="llm_config.json", pref_file="preferences.j
       text_widget.insert(tk.END, summary_text)
       text_widget.pack(padx=10, pady=10)
       text_widget.config(state=tk.DISABLED)
-      current_model_label = Label(popup, text=f"Current AI Model: {provider_config.get('model', 'No Model Selected')}", foreground="red")
+      current_model_label = tk.Label(popup, text=f"Current AI Model: {provider_config.get('model', 'No Model Selected')}", foreground="red")
       current_model_label.pack(side="bottom", fill="x", padx=10, pady=5)
 
 
