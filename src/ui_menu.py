@@ -5,6 +5,7 @@ import webbrowser
 import logging
 import ttkbootstrap as ttk
 import re
+from ai_ui import AIConfigurationDialog
 
 class HyperlinkManager:
     def __init__(self, text):
@@ -62,6 +63,7 @@ class FileCombinerMenu:
         self.menu_bar.add_cascade(label="Preferences", menu=self.preferences_menu)
         self.preferences_menu.add_checkbutton(label="Always on Top", variable=self.always_on_top_var, command=self.toggle_always_on_top)
         self.preferences_menu.add_command(label="Manage Extensions", command=self.manage_extensions)
+        self.preferences_menu.add_command(label="AI Configuration", command=self.open_ai_configuration)
 
     def create_help_menu(self):
         self.help_menu = tk.Menu(self.menu_bar, tearoff=0)
@@ -142,3 +144,6 @@ class FileCombinerMenu:
 
         add_button = ttk.Button(entry_frame, text="Add", command=add_new_extension)
         add_button.pack(side=tk.RIGHT)
+
+    def open_ai_configuration(self):
+        dialog = AIConfigurationDialog(self.parent)

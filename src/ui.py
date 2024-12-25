@@ -6,6 +6,7 @@ import ttkbootstrap as ttk
 from file_combiner import FileCombinerBackend
 from ui_menu import FileCombinerMenu
 import logging
+from ai_integration import summarize_text
 
 class FileCombinerApp:
     def __init__(self, root):
@@ -39,10 +40,15 @@ class FileCombinerApp:
         # Create a text area to show dropped files
         self.text_area = tk.Text(self.frame, height=10, width=50, wrap=tk.WORD)
         self.text_area.pack(pady=10, fill=tk.BOTH, expand=True)
+        
+        # Create a button to summarize text
+        self.summarize_button = ttk.Button(self.frame, text="AI Summarize", command=self.summarize_combined_text, state=tk.DISABLED)
+        self.summarize_button.pack(pady=5)
 
         # Create a button to combine files
         self.combine_button = ttk.Button(self.frame, text="Combine Files", command=self.combine_files)
         self.combine_button.pack(pady=5)
+
 
         # Create a button to copy combined text to clipboard
         self.copy_button = ttk.Button(self.frame, text="Copy to Clipboard", command=self.copy_to_clipboard, state=tk.DISABLED)
@@ -108,6 +114,13 @@ class FileCombinerApp:
         self.text_area.insert(tk.END, f"Error: {message}\n", "error")
         self.text_area.tag_config("error", foreground="red")
         logging.error(message)
+    
+    def summarize_combined_text(self):
+        combined_content = self.text_area.get(1.0, tk.END).strip()
+        if not combined_content:
+            messagebox.showwarning("No Content", "There is no combined content to summarize.")
+            return
+        summarize_text(combined_content, app=self)
 
     def combine_files(self):
         if not self.backend.file_paths:
@@ -124,6 +137,7 @@ class FileCombinerApp:
         # Enable the copy button and save option after combining files
         self.copy_button.config(state=tk.NORMAL)
         self.menu.enable_save()
+        self.summarize_button.config(state=tk.NORMAL)
 
     def copy_to_clipboard(self):
         combined_content = self.text_area.get(1.0, tk.END)
@@ -137,6 +151,7 @@ class FileCombinerApp:
         self.backend.clear_file_paths()
         self.copy_button.config(state=tk.DISABLED)
         self.menu.disable_save()
+        self.summarize_button.config(state=tk.DISABLED)
         logging.info("Text area cleared.")
 
     def save_combined_file(self):

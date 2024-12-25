@@ -313,6 +313,20 @@ def summarize_text(text, config_file="llm_config.json", pref_file="preferences.j
       # Create and display a popup window
       popup = Toplevel(app.root)
       popup.title("AI Summary")
+      # Get the main window's position
+      app_x = app.root.winfo_x()
+      app_y = app.root.winfo_y()
+      app_width = app.root.winfo_width()
+      app_height = app.root.winfo_height()
+      
+      # Calculate the popup's position to be centered on main window
+      popup_width = 500 # set your desired width
+      popup_height = 300 # set your desired height
+      x = app_x + (app_width - popup_width) // 2
+      y = app_y + (app_height - popup_height) // 2
+    
+      popup.geometry(f"{popup_width}x{popup_height}+{x}+{y}")
+
       text_widget = tk.Text(popup, wrap=tk.WORD, height=10, width=50)
       text_widget.insert(tk.END, summary_text)
       text_widget.pack(padx=10, pady=10)
