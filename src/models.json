@@ -32,9 +32,9 @@
           "gemini-ultra"
       ],
       "api_key_field": true,
-      "api_base_field": false,
-       "api_organisation_field": false,
-      "token_limit_field": false
+      "api_base_field": true,
+       "api_organisation_field": true,
+      "token_limit_field": true
   },
   "Anthropic": {
       "models": [
@@ -44,9 +44,9 @@
           "claude-2.0"
       ],
       "api_key_field": true,
-      "api_base_field": false,
-      "api_organisation_field": false,
-      "token_limit_field": false,
+      "api_base_field": true,
+      "api_organisation_field": true,
+      "token_limit_field": true,
       "anthropic_max_tokens_field": true
   },
   "Mistral AI": {
@@ -63,10 +63,10 @@
   },
   "Local LLM": {
       "models": [],
-      "api_key_field": false,
+      "api_key_field": true,
       "api_base_field": true,
-       "api_organisation_field": false,
-      "token_limit_field": false
+       "api_organisation_field": true,
+      "token_limit_field": true
   },
   "Manual":{
      "models": [],
