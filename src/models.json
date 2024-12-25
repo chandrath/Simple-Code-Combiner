@@ -17,7 +17,8 @@
   },
   "Groq": {
       "models": [
-          "mixtral-8x7b-32768"
+          "mixtral-8x7b-32768",
+          "llama-3.3-70b-versatile"
       ],
       "api_key_field": true,
       "api_base_field": true,
@@ -29,7 +30,8 @@
           "gemini-1.5-pro-latest",
           "gemini-1.5-flash-latest",
           "gemini-pro",
-          "gemini-ultra"
+          "gemini-ultra",
+          "gemini-2.0-flash-exp"
       ],
       "api_key_field": true,
       "api_base_field": true,
@@ -75,7 +77,7 @@
        "api_organisation_field": true,
       "token_limit_field": true
   },
-    "Example 2073": {
+    "AExample 2073": {
       "models": [
           "mistral-large-latest",
           "mistral-medium-latest",
