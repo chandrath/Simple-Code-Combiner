@@ -8,6 +8,17 @@ class AIProvider:
     def __init__(self, provider_name, settings):
         self.provider_name = provider_name
         self.settings = settings
+        self.models_data = self._load_models()
+
+    def _load_models(self, models_file=None):
+      if models_file is None:
+          models_file = os.path.join(os.path.dirname(__file__), "models.json")
+      try:
+          with open(models_file, 'r') as f:
+              return json.load(f)
+      except (FileNotFoundError, json.JSONDecodeError) as e:
+          logging.error(f"Error loading models file: {e}")
+          return {}
 
     def summarize(self, text):
         api_key = self.settings.get("api_key")
@@ -27,12 +38,18 @@ class AIProvider:
             if output_token_limit:
                 output_token_limit = int(output_token_limit)
 
+        api_base = self.settings.get("api_base")
+        if not api_base:
+            provider_data = self.models_data.get(self.provider_name, {})
+            api_base = provider_data.get("default_api_base")
+
+
         if self.provider_name == "OpenAI":
-            return self._summarize_with_openai(text, max_tokens=output_token_limit)
+            return self._summarize_with_openai(text, api_base=api_base, max_tokens=output_token_limit)
         elif self.provider_name == "Groq":
-            return self._summarize_with_openai(text, api_base=self.settings.get("api_base"), max_tokens=output_token_limit)
+            return self._summarize_with_openai(text, api_base=api_base, max_tokens=output_token_limit)
         elif self.provider_name == "Mistral AI":
-            return self._summarize_with_openai(text, max_tokens=output_token_limit)
+            return self._summarize_with_openai(text, api_base=api_base, max_tokens=output_token_limit)
         elif self.provider_name == "Anthropic":
             return self._summarize_with_anthropic(text, max_tokens=output_token_limit)
         elif self.provider_name == "Local LLM":
@@ -45,7 +62,7 @@ class AIProvider:
     def _summarize_with_openai(self, text, api_base=None, max_tokens=None):
         import openai
         openai.api_key = self.settings.get("api_key")
-        openai.api_base = api_base if api_base else self.settings.get("api_base", "https://api.openai.com/v1")
+        openai.api_base = api_base if api_base else "https://api.openai.com/v1"
         client = openai.OpenAI(api_key=openai.api_key, base_url=openai.api_base)
         try:
             response = client.chat.completions.create(

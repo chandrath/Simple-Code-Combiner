@@ -155,7 +155,10 @@ class AIConfigurationDialog:
                 entry_frame = ttk.Frame(frame)
                 ttk.Label(entry_frame, text=label_text).pack(side="left", padx=5)
 
+                 # Get default value from models.json
                 default_value = models_for_provider.get(f"default_{field_name}")
+
+                # Get saved or default value
                 entry_value = provider_config.get(field_name, default_value if default_value is not None else "")
                 entry = ttk.Entry(entry_frame, name=field_name)
                 entry.insert(0, entry_value)
