@@ -1,40 +1,11 @@
 # ui.py
 import tkinter as tk
-from tkinter import filedialog, messagebox, Menu, Toplevel
+from tkinter import filedialog, messagebox
 from tkinterdnd2 import DND_FILES
 import ttkbootstrap as ttk
-import webbrowser
 from file_combiner import FileCombinerBackend
+from ui_menu import FileCombinerMenu
 import logging
-
-class HyperlinkManager:
-    def __init__(self, text):
-        self.text = text
-        self.text.tag_config("hyper", foreground="blue", underline=1)
-        self.text.tag_bind("hyper", "<Enter>", self._enter)
-        self.text.tag_bind("hyper", "<Leave>", self._leave)
-        self.text.tag_bind("hyper", "<Button-1>", self._click)
-        self.reset()
-
-    def reset(self):
-        self.links = {}
-
-    def add(self, action):
-        tag = "hyper-%d" % len(self.links)
-        self.links[tag] = action
-        return "hyper", tag
-
-    def _enter(self, event):
-        self.text.config(cursor="hand2")
-
-    def _leave(self, event):
-        self.text.config(cursor="")
-
-    def _click(self, event):
-        for tag, action in self.links.items():
-            if tag in self.text.tag_names(tk.CURRENT):
-                webbrowser.open(action)
-                return
 
 class FileCombinerApp:
     def __init__(self, root):
@@ -45,35 +16,13 @@ class FileCombinerApp:
         # Initialize the backend logic
         self.backend = FileCombinerBackend()
 
+        # Initialize the menu
+        self.menu = FileCombinerMenu(self.root, self)
+
         # Set up logging (ensure it's initialized once)
         logging.basicConfig(filename="file_combiner.log", level=logging.INFO,
                             format="%(asctime)s - %(levelname)s - %(message)s")
         logging.info("Application started")
-
-        # Create a menu bar
-        self.menu_bar = Menu(root)
-        self.root.config(menu=self.menu_bar)
-
-        # Create "File" Menu
-        self.file_menu = Menu(self.menu_bar, tearoff=0)
-        self.menu_bar.add_cascade(label="File", menu=self.file_menu)
-        self.file_menu.add_command(label="Open Files", command=self.open_files)
-        self.file_menu.add_command(label="Open Folder", command=self.open_folder)
-        self.file_menu.add_command(label="Save Combined File", command=self.save_combined_file, state=tk.DISABLED)
-        self.file_menu.add_separator()
-        self.file_menu.add_command(label="Exit", command=self.root.quit)
-
-        # Create "Preferences" Menu
-        self.preferences_menu = Menu(self.menu_bar, tearoff=0)
-        self.menu_bar.add_cascade(label="Preferences", menu=self.preferences_menu)
-        self.always_on_top_var = tk.BooleanVar()
-        self.preferences_menu.add_checkbutton(label="Always on Top", variable=self.always_on_top_var, command=self.toggle_always_on_top)
-        self.preferences_menu.add_command(label="Manage Extensions", command=self.manage_extensions)
-
-        # Create "Help" Menu
-        self.help_menu = Menu(self.menu_bar, tearoff=0)
-        self.menu_bar.add_cascade(label="Help", menu=self.help_menu)
-        self.help_menu.add_command(label="About Us", command=self.show_about)
 
         # Create a frame for drag and drop
         self.frame = ttk.Frame(root, padding=10)
@@ -107,7 +56,7 @@ class FileCombinerApp:
 
         # Set up drag and drop
         self.setup_drag_and_drop()
-        self.load_config() # Load config after initializing backend
+        self.load_config() # Load config after initializing backend and menu
 
     def load_config(self):
         self.backend.load_config()
@@ -174,7 +123,7 @@ class FileCombinerApp:
 
         # Enable the copy button and save option after combining files
         self.copy_button.config(state=tk.NORMAL)
-        self.file_menu.entryconfig("Save Combined File", state=tk.NORMAL)
+        self.menu.enable_save()
 
     def copy_to_clipboard(self):
         combined_content = self.text_area.get(1.0, tk.END)
@@ -187,25 +136,8 @@ class FileCombinerApp:
         self.text_area.delete(1.0, tk.END)
         self.backend.clear_file_paths()
         self.copy_button.config(state=tk.DISABLED)
-        self.file_menu.entryconfig("Save Combined File", state=tk.DISABLED)
+        self.menu.disable_save()
         logging.info("Text area cleared.")
-
-    def show_about(self):
-        about_window = Toplevel(self.root)
-        about_window.title("About Us")
-
-        text = tk.Text(about_window, wrap=tk.WORD, height=7, width=50)
-        text.pack(padx=10, pady=10)
-        text.insert(tk.END, "Code Combiner v0.8.1\nA simple tool to combine code files.\n\nDeveloped By: Shree\n")
-        text.config(state=tk.DISABLED)
-        text.config(state=tk.NORMAL)
-        link = HyperlinkManager(text)
-        text.insert(tk.END, "https://github.com/chandrath/Simple-Code-Combiner", link.add("https://github.com/chandrath/Simple-Code-Combiner"))
-        text.config(state=tk.DISABLED)
-
-    def toggle_always_on_top(self):
-        self.root.attributes('-topmost', self.always_on_top_var.get())
-        logging.info(f"Always on top set to {self.always_on_top_var.get()}.")
 
     def save_combined_file(self):
         combined_content = self.text_area.get(1.0, tk.END).strip()
@@ -223,55 +155,3 @@ class FileCombinerApp:
                 logging.info(f"Combined content saved to {file_path}")
             except Exception as e:
                 logging.error(f"Error saving file: {e}")
-
-    def manage_extensions(self):
-        extensions_window = tk.Toplevel(self.root)
-        extensions_window.title("Manage Extensions")
-        extensions_window.geometry("400x300")
-
-        scrollbar = ttk.Scrollbar(extensions_window)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
-        listbox = tk.Listbox(extensions_window, yscrollcommand=scrollbar.set, height=10)
-        listbox.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
-
-        scrollbar.config(command=listbox.yview)
-        for ext in self.backend.supported_extensions:
-            listbox.insert(tk.END, ext)
-
-        entry_frame = ttk.Frame(extensions_window)
-        entry_frame.pack(fill=tk.X, padx=10, pady=(0, 10))
-        extension_entry = ttk.Entry(entry_frame)
-        extension_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
-
-        def remove_selected_extension():
-            selected_indices = listbox.curselection()
-            if selected_indices:
-                selected_extensions = [listbox.get(i) for i in selected_indices]
-                self.backend.remove_extensions(selected_extensions)
-                for i in reversed(selected_indices):
-                    listbox.delete(i)
-                self.save_config()
-
-        remove_button = ttk.Button(entry_frame, text="Remove", command=remove_selected_extension)
-        remove_button.pack(side=tk.RIGHT)
-
-        def add_new_extension():
-            new_ext = extension_entry.get().strip().lower()
-            if new_ext:
-                if not new_ext.startswith("."):
-                    messagebox.showwarning("Invalid Extension", "Extension must start with a dot")
-                    return
-                if not re.match(r"^\.[a-zA-Z0-9_]+$", new_ext):
-                    messagebox.showwarning("Invalid Extension", "Invalid characters in extension")
-                    return
-                if self.backend.add_extension(new_ext):
-                    listbox.insert(tk.END, new_ext)
-                    extension_entry.delete(0, tk.END)
-                    self.save_config()
-                    logging.info(f"Added new extension: {new_ext}")
-                else:
-                    messagebox.showwarning("Duplicate Extension", f"{new_ext} is already supported!")
-
-        add_button = ttk.Button(entry_frame, text="Add", command=add_new_extension)
-        add_button.pack(side=tk.RIGHT)
