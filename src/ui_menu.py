@@ -4,7 +4,7 @@ from tkinter import filedialog, messagebox, Toplevel
 import webbrowser
 import logging
 import ttkbootstrap as ttk
-import re  # Added the missing import for the re module
+import re
 
 class HyperlinkManager:
     def __init__(self, text):
