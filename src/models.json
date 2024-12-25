@@ -1,92 +1,94 @@
 {
-  "OpenAI": {
+    "OpenAI": {
       "models": [
-          "gpt-4-turbo-preview",
-          "gpt-4-0125-preview",
-          "gpt-4-1106-preview",
-          "gpt-4",
-          "gpt-3.5-turbo-0125",
-          "gpt-3.5-turbo-1106",
-          "gpt-3.5-turbo",
-          "gpt-3.5-turbo-instruct"
+        "gpt-4-turbo-preview",
+        "gpt-4-0125-preview",
+        "gpt-4-1106-preview",
+        "gpt-4",
+        "gpt-3.5-turbo-0125",
+        "gpt-3.5-turbo-1106",
+        "gpt-3.5-turbo",
+        "gpt-3.5-turbo-instruct"
+      ],
+      "api_key_field": true,
+      "api_base_field": true,
+      "api_organisation_field": true,
+      "token_limit_field": true,
+      "default_api_base": "https://api.openai.com/v1"
+    },
+    "Groq": {
+      "models": [
+        "mixtral-8x7b-32768",
+        "llama-3.3-70b-versatile"
+      ],
+      "api_key_field": true,
+      "api_base_field": true,
+      "api_organisation_field": true,
+      "token_limit_field": true,
+      "default_api_base": "https://api.groq.com/openai/v1"
+    },
+    "Google": {
+      "models": [
+        "gemini-1.5-pro-latest",
+        "gemini-1.5-flash-latest",
+        "gemini-pro",
+        "gemini-ultra",
+        "gemini-2.0-flash-exp"
       ],
       "api_key_field": true,
       "api_base_field": true,
       "api_organisation_field": true,
       "token_limit_field": true
-  },
-  "Groq": {
+    },
+    "Anthropic": {
       "models": [
-          "mixtral-8x7b-32768",
-          "llama-3.3-70b-versatile"
-      ],
-      "api_key_field": true,
-      "api_base_field": true,
-       "api_organisation_field": true,
-      "token_limit_field": true
-  },
-  "Google": {
-      "models": [
-          "gemini-1.5-pro-latest",
-          "gemini-1.5-flash-latest",
-          "gemini-pro",
-          "gemini-ultra",
-          "gemini-2.0-flash-exp"
-      ],
-      "api_key_field": true,
-      "api_base_field": true,
-       "api_organisation_field": true,
-      "token_limit_field": true
-  },
-  "Anthropic": {
-      "models": [
-          "claude-3-opus-20240229",
-          "claude-3-sonnet-20240229",
-          "claude-2.1",
-          "claude-2.0"
+        "claude-3-opus-20240229",
+        "claude-3-sonnet-20240229",
+        "claude-2.1",
+        "claude-2.0"
       ],
       "api_key_field": true,
       "api_base_field": true,
       "api_organisation_field": true,
       "token_limit_field": true,
       "anthropic_max_tokens_field": true
-  },
-  "Mistral AI": {
-       "models": [
-          "mistral-large-latest",
-          "mistral-medium-latest",
-          "mistral-small-latest",
-          "mistral-tiny-latest"
+    },
+    "Mistral AI": {
+      "models": [
+        "mistral-large-latest",
+        "mistral-medium-latest",
+        "mistral-small-latest",
+        "mistral-tiny-latest"
       ],
       "api_key_field": true,
       "api_base_field": true,
       "api_organisation_field": true,
       "token_limit_field": true
-  },
-  "Local LLM": {
+    },
+    "Local LLM": {
       "models": [],
       "api_key_field": true,
       "api_base_field": true,
-       "api_organisation_field": true,
+      "api_organisation_field": true,
       "token_limit_field": true
-  },
-  "Manual":{
-     "models": [],
+    },
+    "Manual": {
+      "models": [],
       "api_key_field": true,
       "api_base_field": true,
-       "api_organisation_field": true,
+      "api_organisation_field": true,
       "token_limit_field": true
-  },
+    },
     "AExample 2073": {
       "models": [
-          "mistral-large-latest",
-          "mistral-medium-latest",
-          "mistral-small-latest",
-          "mistral-tiny-latest"
+        "mistral-large-latest",
+        "mistral-medium-latest",
+        "mistral-small-latest",
+        "mistral-tiny-latest"
       ],
-     "api_key_field": true,
+      "api_key_field": true,
       "api_base_field": true,
-       "api_organisation_field": true,
+      "api_organisation_field": true,
       "token_limit_field": true
+    }
   }
-}

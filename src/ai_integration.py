@@ -1,4 +1,5 @@
 # ai_integration.py
+# ai_integration.py
 import json
 import logging
 import os
@@ -13,18 +14,27 @@ class AIProvider:
         if not api_key:
             raise ValueError(f"API Key is not configured for the selected AI provider: {self.provider_name}")
 
-        input_token_limit = self.settings.get("input_token_limit")
-        if self.settings.get("input_token_limit_enabled", False) and input_token_limit and len(text.split()) > int(input_token_limit):
-            raise ValueError(f"Text exceeds the input token limit of {input_token_limit}.")
-    
+        # Input token limit check
+        if self.settings.get("input_token_limit_enabled", False):
+            input_token_limit = self.settings.get("input_token_limit")
+            if input_token_limit and len(text.split()) > int(input_token_limit):
+                raise ValueError(f"Text exceeds the input token limit of {input_token_limit}.")
+
+        # Output token limit
+        output_token_limit = None
+        if self.settings.get("output_token_limit_enabled", False):
+            output_token_limit = self.settings.get("output_token_limit")
+            if output_token_limit:
+                output_token_limit = int(output_token_limit)
+
         if self.provider_name == "OpenAI":
-            return self._summarize_with_openai(text)
+            return self._summarize_with_openai(text, max_tokens=output_token_limit)
         elif self.provider_name == "Groq":
-            return self._summarize_with_openai(text, api_base="https://api.groq.com/openai/v1")
+            return self._summarize_with_openai(text, api_base=self.settings.get("api_base"), max_tokens=output_token_limit)
         elif self.provider_name == "Mistral AI":
-            return self._summarize_with_openai(text)
+            return self._summarize_with_openai(text, max_tokens=output_token_limit)
         elif self.provider_name == "Anthropic":
-            return self._summarize_with_anthropic(text)
+            return self._summarize_with_anthropic(text, max_tokens=output_token_limit)
         elif self.provider_name == "Local LLM":
             return self._summarize_with_local_llm(text)
         elif self.provider_name == "Google":
@@ -32,7 +42,7 @@ class AIProvider:
         else:
             raise ValueError(f"Unsupported AI provider: {self.provider_name}")
 
-    def _summarize_with_openai(self, text, api_base=None):
+    def _summarize_with_openai(self, text, api_base=None, max_tokens=None):
         import openai
         openai.api_key = self.settings.get("api_key")
         openai.api_base = api_base if api_base else self.settings.get("api_base", "https://api.openai.com/v1")
@@ -43,20 +53,21 @@ class AIProvider:
                 messages=[
                     {"role": "system", "content": "Summarize the following text:"},
                     {"role": "user", "content": text}
-                ]
+                ],
+                max_tokens=max_tokens
             )
             return response.choices[0].message.content
         except Exception as e:
             raise Exception(f"OpenAI API error: {e}")
 
-    def _summarize_with_anthropic(self, text):
+    def _summarize_with_anthropic(self, text, max_tokens=None):
         import anthropic
         api_key = self.settings.get("api_key")
         client = anthropic.Anthropic(api_key=api_key)
         try:
             response = client.messages.create(
                 model=self.settings.get("model", "claude-3-opus-20240229"),
-                 max_tokens= int(self.settings.get("anthropic_max_tokens", 1024)) if self.settings.get("anthropic_max_tokens_enabled", False) else None,
+                max_tokens=max_tokens,
                 messages=[
                     {"role": "user", "content": f"Summarize the following text:\n\n{text}"}
                 ]
@@ -127,13 +138,13 @@ def summarize_text(text, config_file="llm_config.json", pref_file="preferences.j
       app_y = app.root.winfo_y()
       app_width = app.root.winfo_width()
       app_height = app.root.winfo_height()
-      
+
       # Calculate the popup's position to be centered on main window
       popup_width = 500 # set your desired width
       popup_height = 300 # set your desired height
       x = app_x + (app_width - popup_width) // 2
       y = app_y + (app_height - popup_height) // 2
-    
+
       popup.geometry(f"{popup_width}x{popup_height}+{x}+{y}")
 
       text_widget = tk.Text(popup, wrap=tk.WORD, height=10, width=50)
@@ -142,6 +153,5 @@ def summarize_text(text, config_file="llm_config.json", pref_file="preferences.j
       text_widget.config(state=tk.DISABLED)
       current_model_label = tk.Label(popup, text=f"Current AI Model: {provider_config.get('model', 'No Model Selected')}", foreground="red")
       current_model_label.pack(side="bottom", fill="x", padx=10, pady=5)
-
 
     return summary_text
