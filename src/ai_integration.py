@@ -1,8 +1,11 @@
 # ai_integration.py
 # ai_integration.py
+# ai_integration.py
 import json
 import logging
 import os
+import tkinter as tk
+from tkinter import messagebox
 
 class AIProvider:
     def __init__(self, provider_name, settings):
@@ -43,30 +46,38 @@ class AIProvider:
             provider_data = self.models_data.get(self.provider_name, {})
             api_base = provider_data.get("default_api_base")
 
+        model = self.settings.get("model")
+        if not model and self.provider_name in self.models_data and self.models_data[self.provider_name].get('models'):
+            model = self.models_data[self.provider_name]['models'][0]
+            logging.warning(f"No model selected for {self.provider_name}. Using default model: {model}")
+        elif not model:
+            raise ValueError(f"No model configured for the selected AI provider: {self.provider_name}")
 
         if self.provider_name == "OpenAI":
-            return self._summarize_with_openai(text, api_base=api_base, max_tokens=output_token_limit)
+            return self._summarize_with_openai(text, model=model, api_base=api_base, max_tokens=output_token_limit)
         elif self.provider_name == "Groq":
-            return self._summarize_with_openai(text, api_base=api_base, max_tokens=output_token_limit)
+            return self._summarize_with_openai(text, model=model, api_base=api_base, max_tokens=output_token_limit)
         elif self.provider_name == "Mistral AI":
-            return self._summarize_with_openai(text, api_base=api_base, max_tokens=output_token_limit)
+            return self._summarize_with_openai(text, model=model, api_base=api_base, max_tokens=output_token_limit)
         elif self.provider_name == "Anthropic":
-            return self._summarize_with_anthropic(text, max_tokens=output_token_limit)
+            anthropic_max_tokens = self.settings.get("anthropic_max_tokens")
+            max_tokens = int(anthropic_max_tokens) if anthropic_max_tokens else output_token_limit
+            return self._summarize_with_anthropic(text, model=model, max_tokens=max_tokens)
         elif self.provider_name == "Local LLM":
             return self._summarize_with_local_llm(text)
         elif self.provider_name == "Google":
-            return self._summarize_with_gemini(text)
+            return self._summarize_with_gemini(text, model=model)
         else:
             raise ValueError(f"Unsupported AI provider: {self.provider_name}")
 
-    def _summarize_with_openai(self, text, api_base=None, max_tokens=None):
+    def _summarize_with_openai(self, text, model, api_base=None, max_tokens=None):
         import openai
         openai.api_key = self.settings.get("api_key")
         openai.api_base = api_base if api_base else "https://api.openai.com/v1"
         client = openai.OpenAI(api_key=openai.api_key, base_url=openai.api_base)
         try:
             response = client.chat.completions.create(
-                model=self.settings.get("model", "gpt-4"),
+                model=model,
                 messages=[
                     {"role": "system", "content": "Summarize the following text:"},
                     {"role": "user", "content": text}
@@ -77,13 +88,13 @@ class AIProvider:
         except Exception as e:
             raise Exception(f"OpenAI API error: {e}")
 
-    def _summarize_with_anthropic(self, text, max_tokens=None):
+    def _summarize_with_anthropic(self, text, model, max_tokens=None):
         import anthropic
         api_key = self.settings.get("api_key")
         client = anthropic.Anthropic(api_key=api_key)
         try:
             response = client.messages.create(
-                model=self.settings.get("model", "claude-3-opus-20240229"),
+                model=model,
                 max_tokens=max_tokens,
                 messages=[
                     {"role": "user", "content": f"Summarize the following text:\n\n{text}"}
@@ -97,13 +108,16 @@ class AIProvider:
         # Placeholder for local LLM implementation (e.g., using llama.cpp, KoboldCpp, LM Studio APIs)
         raise NotImplementedError("Local LLM integration is not yet implemented.")
 
-    def _summarize_with_gemini(self, text):
+    def _summarize_with_gemini(self, text, model):
         import google.generativeai as genai
         genai.configure(api_key=self.settings.get("api_key"))
-        model_name = self.settings.get("model", "gemini-1.5-flash")
+        model_name = model
         model = genai.GenerativeModel(model_name)
-        response = model.generate_content([text])
-        return response.text
+        try:
+            response = model.generate_content(f"Summarize the following text:\n\n{text}")
+            return response.text
+        except Exception as e:
+            raise Exception(f"Google Gemini API error: {e}")
 
 def load_llm_config(config_file="llm_config.json"):
     try:
@@ -143,32 +157,38 @@ def summarize_text(text, config_file="llm_config.json", pref_file="preferences.j
     all_prefs = load_preferences(pref_file)
     provider_name = all_prefs.get("current_provider", "OpenAI")
     provider_config = all_prefs.get(provider_name, {})
-    provider = AIProvider(provider_name, provider_config)
-    summary_text = provider.summarize(text)
+    try:
+        provider = AIProvider(provider_name, provider_config)
+        summary_text = provider.summarize(text)
 
-    if app:
-      # Create and display a popup window
-      popup = tk.Toplevel(app.root)
-      popup.title("AI Summary")
-      # Get the main window's position
-      app_x = app.root.winfo_x()
-      app_y = app.root.winfo_y()
-      app_width = app.root.winfo_width()
-      app_height = app.root.winfo_height()
+        if app:
+          # Create and display a popup window
+          popup = tk.Toplevel(app.root)
+          popup.title("AI Summary")
+          # Get the main window's position
+          app_x = app.root.winfo_x()
+          app_y = app.root.winfo_y()
+          app_width = app.root.winfo_width()
+          app_height = app.root.winfo_height()
 
-      # Calculate the popup's position to be centered on main window
-      popup_width = 500 # set your desired width
-      popup_height = 300 # set your desired height
-      x = app_x + (app_width - popup_width) // 2
-      y = app_y + (app_height - popup_height) // 2
+          # Calculate the popup's position to be centered on main window
+          popup_width = 500 # set your desired width
+          popup_height = 300 # set your desired height
+          x = app_x + (app_width - popup_width) // 2
+          y = app_y + (app_height - popup_height) // 2
 
-      popup.geometry(f"{popup_width}x{popup_height}+{x}+{y}")
+          popup.geometry(f"{popup_width}x{popup_height}+{x}+{y}")
 
-      text_widget = tk.Text(popup, wrap=tk.WORD, height=10, width=50)
-      text_widget.insert(tk.END, summary_text)
-      text_widget.pack(padx=10, pady=10)
-      text_widget.config(state=tk.DISABLED)
-      current_model_label = tk.Label(popup, text=f"Current AI Model: {provider_config.get('model', 'No Model Selected')}", foreground="red")
-      current_model_label.pack(side="bottom", fill="x", padx=10, pady=5)
+          text_widget = tk.Text(popup, wrap=tk.WORD, height=10, width=50)
+          text_widget.insert(tk.END, summary_text)
+          text_widget.pack(padx=10, pady=10)
+          text_widget.config(state=tk.DISABLED)
+          current_model_label = tk.Label(popup, text=f"Current AI Model: {provider_config.get('model', 'No Model Selected')}", foreground="red")
+          current_model_label.pack(side="bottom", fill="x", padx=10, pady=5)
 
-    return summary_text
+        return summary_text
+    except Exception as e:
+        logging.error(f"Error during summarization: {e}")
+        if app:
+            messagebox.showerror("Summarization Error", str(e))
+        return None

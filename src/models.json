@@ -36,8 +36,8 @@
         "gemini-2.0-flash-exp"
       ],
       "api_key_field": true,
-      "api_base_field": true,
-      "api_organisation_field": true,
+      "api_base_field": false,
+      "api_organisation_field": false,
       "token_limit_field": true
     },
     "Anthropic": {
