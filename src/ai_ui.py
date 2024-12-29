@@ -97,7 +97,11 @@ class AIConfigurationDialog:
             frame.grid_remove()
 
         self.current_model_label.grid(row=2, column=0, sticky="ew", padx=10, pady=5)
-        ttk.Button(self.dialog, text="Save", command=self.save_configuration).grid(row=3, column=0, pady=10)
+
+        # Default settings Button
+        ttk.Button(self.dialog, text="Default Settings", command=self.reset_to_defaults).grid(row=3, column=0, pady=10)
+
+        ttk.Button(self.dialog, text="Save", command=self.save_configuration).grid(row=4, column=0, pady=10)
 
     def populate_config_frame(self, provider_name, frame):
         config_widgets = {}
@@ -155,10 +159,7 @@ class AIConfigurationDialog:
                 entry_frame = ttk.Frame(frame)
                 ttk.Label(entry_frame, text=label_text).pack(side="left", padx=5)
 
-                 # Get default value from models.json
                 default_value = models_for_provider.get(f"default_{field_name}")
-
-                # Get saved or default value
                 entry_value = provider_config.get(field_name, default_value if default_value is not None else "")
                 entry = ttk.Entry(entry_frame, name=field_name)
                 entry.insert(0, entry_value)
@@ -215,3 +216,30 @@ class AIConfigurationDialog:
         save_preferences(self.all_prefs, self.pref_file)
         messagebox.showinfo("Success", "Configuration saved successfully!")
         self.dialog.destroy()
+
+    def reset_to_defaults(self):
+        if messagebox.askokcancel("Confirm Reset", "Are you sure you want to reset all AI settings to their defaults?"):
+            # Reset Current Provider to Default
+            self.all_prefs["current_provider"] = "OpenAI"
+            self.provider_var.set("OpenAI")
+
+            for provider_name in self.available_providers:
+                if provider_name in self.config_widgets:
+                    for key, widget in self.config_widgets[provider_name].items():
+                        if isinstance(widget, ttk.Entry):
+                            widget.delete(0, tk.END)
+                            models_for_provider = self.models_data.get(provider_name, {})
+                            default_value = models_for_provider.get(f"default_{key}")
+                            if default_value:
+                                widget.insert(0, default_value)
+                    #Reset to deafult
+                    self.config_widgets[provider_name]["input_token_limit_enabled_var"].set(False)
+                    self.config_widgets[provider_name]["output_token_limit_enabled_var"].set(False)
+                    if "model_var" in self.config_widgets[provider_name]:
+                        sorted_models = sorted(self.models_data[provider_name]['models'])
+                        self.config_widgets[provider_name]["model_var"].set(sorted_models[0] if sorted_models else "")
+                # Clear the provider settings in all_prefs
+            self.all_prefs = {"current_provider": "OpenAI"}  # Reset to only current_provider being OpenAI
+            save_preferences(self.all_prefs, self.pref_file)
+            self.load_saved_values()
+            messagebox.showinfo("Success", "AI settings reset to defaults.")
