@@ -43,9 +43,20 @@ class FileCombinerApp:
         self.token_count_label = ttk.Label(self.frame, text="", foreground="grey", font=("Arial", 8))
         self.token_count_label.pack(anchor="nw", padx=1)  # Align top-left
 
+        # Frame to hold the text area and scrollbar
+        self.text_area_frame = ttk.Frame(self.frame)
+        self.text_area_frame.pack(pady=0, fill=tk.BOTH, expand=True)
+
+        # Create a scrollbar
+        self.scrollbar = ttk.Scrollbar(self.text_area_frame, orient=tk.VERTICAL)
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
         # Create a text area to show dropped files
-        self.text_area = tk.Text(self.frame, height=10, width=50, wrap=tk.WORD)
-        self.text_area.pack(pady=0, fill=tk.BOTH, expand=True)
+        self.text_area = tk.Text(self.text_area_frame, height=10, width=50, wrap=tk.WORD, yscrollcommand=self.scrollbar.set)
+        self.text_area.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # Configure the Scrollbar to control the Text widget
+        self.scrollbar.config(command=self.text_area.yview)
 
         # Frame for buttons at the bottom of the text area
         self.button_frame = ttk.Frame(self.frame)
@@ -54,11 +65,11 @@ class FileCombinerApp:
         self.button_frame.columnconfigure(1, weight=1)
 
         # AI Summarize button (moved and styled)
-        self.summarize_button = ttk.Button(self.button_frame, text="AI Summarize", command=self.summarize_combined_text, state=tk.DISABLED, style="info.Outline.TButton", padding=2)
+        self.summarize_button = ttk.Button(self.button_frame, text="AI Summarize", command=self.summarize_combined_text, state=tk.DISABLED, style="secondary.Outline.TButton", padding=2)
         self.summarize_button.grid(row=0, column=0, sticky="w")
 
         # Clear button (moved and styled)
-        self.clear_button = ttk.Button(self.button_frame, text="Clear", command=self.clear_text, state=tk.DISABLED, style="danger.Outline.TButton", padding=2)
+        self.clear_button = ttk.Button(self.button_frame, text="Clear", command=self.clear_text, style="danger.Outline.TButton", padding=2)
         self.clear_button.grid(row=0, column=1, sticky="e")
 
         # **New: Error/Warning display area**
@@ -180,7 +191,6 @@ class FileCombinerApp:
         self.download_button.config(state=tk.NORMAL)
         self.menu.enable_save()
         self.summarize_button.config(state=tk.NORMAL)
-        self.clear_button.config(state=tk.NORMAL)
 
         # Show success message
         self.error_label.config(text="Provided files now combined. You can copy to clipboard or save the file.", foreground="green")
@@ -202,7 +212,6 @@ class FileCombinerApp:
         self.download_button.config(state=tk.DISABLED)
         self.menu.disable_save()
         self.summarize_button.config(state=tk.DISABLED)
-        self.clear_button.config(state=tk.DISABLED) # Disable clear button when cleared
         self.clear_error()
         self.combine_button.config(state=tk.NORMAL) # Enable combine button
         self.token_count_label.config(text="") # Clear token count
