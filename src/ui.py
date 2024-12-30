@@ -86,7 +86,7 @@ class FileCombinerApp:
         self.button_frame.columnconfigure(2, weight=0) # For clear button
 
         # AI Summarize button (moved and styled)
-        self.summarize_button = ttk.Button(self.button_frame, text="AI Summarize", command=self.summarize_combined_text, state=tk.DISABLED, style="dark.Outline.TButton", padding=2)
+        self.summarize_button = ttk.Button(self.button_frame, text="AI Summarize (Beta)", command=self.summarize_combined_text, state=tk.DISABLED, style="dark.Outline.TButton", padding=2)
         self.summarize_button.grid(row=0, column=0, sticky="w")
 
         # Edit button
