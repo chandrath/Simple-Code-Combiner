@@ -7,13 +7,14 @@ import ttkbootstrap as ttk
 from file_combiner import FileCombinerBackend
 from ui_menu import FileCombinerMenu
 import logging
+import os  # Import os for path manipulation
 from ai_integration import summarize_text
 
 class FileCombinerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Code Combiner")
-        self.root.geometry("300x550")
+        self.root.geometry("300x550")  # Assuming this is your updated geometry
 
         # Initialize the backend logic
         self.backend = FileCombinerBackend()
@@ -110,14 +111,24 @@ class FileCombinerApp:
         if file_path:  # Enable combine button if files were added
             self.combine_button.config(state=tk.NORMAL)
 
-    def import_file(self, file):
-        if self.backend.is_supported_file(file):
-            self.backend.add_file_path(file)
-            self.text_area.insert(tk.END, f"{file}\n")
-            self.clear_error() # Clear any previous error
-            self.combine_button.config(state=tk.NORMAL) # Enable combine button
+    def import_file(self, file_path):
+        if self.backend.is_supported_file(file_path):
+            file_name = os.path.basename(file_path)
+            self.backend.add_file_path(file_path)
+
+            # Define tags and styles
+            self.text_area.tag_config("filename", foreground="green", font=("Arial", 10, "bold"))
+            self.text_area.tag_config("filepath", foreground="grey", font=("Arial", 8, "italic"))
+
+            # Insert styled text
+            self.text_area.insert(tk.END, f"{file_name} ", "filename")
+            self.text_area.insert(tk.END, f"({file_path})\n", "filepath")
+
+            self.clear_error()  # Clear any previous error
+            self.combine_button.config(state=tk.NORMAL)  # Enable combine button
         else:
-            self.display_error(f"Unsupported extension - {file}. If it's a code file, use 'Preferences -> Manage Extensions' to add it.")
+            self.display_error(f"Unsupported extension - {file_path}. If it's a code file, use 'Preferences -> Manage Extensions' to add it.")
+
 
     def open_files(self):
         files = filedialog.askopenfilenames(filetypes=[("All files", "*.*")])
