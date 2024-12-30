@@ -268,7 +268,12 @@ class FileCombinerApp:
         if not combined_content:
             messagebox.showwarning("No Content", "There is no combined content to summarize.")
             return
-        summarize_text(combined_content, app=self)
+        self.start_progress()  # Start progress before summarization
+        self.root.update()  # Force UI update to show progress bar immediately
+        try:
+            summarize_text(combined_content, app=self)
+        finally:
+            self.root.after(300, self.stop_progress) # Stop progress bar after 300ms
 
     def combine_files(self):
         if not self.backend.file_paths:
