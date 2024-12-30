@@ -1,6 +1,7 @@
 # ui.py
 # ui.py
 # ui.py
+# ui.py
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from tkinterdnd2 import DND_FILES
@@ -336,7 +337,7 @@ class FileCombinerApp:
                                                  filetypes=[("Text files", "*.txt"), ("Markdown files", "*.md"), ("All files", "*.*")])
         if file_path:
             try:
-                with open(file_path, 'w') as f:
+                with open(file_path, 'w', encoding='utf-8') as f:
                     f.write(combined_content)
                 messagebox.showinfo("Saved", f"Combined content saved to {file_path}")
                 logging.info(f"Combined content saved to {file_path}")
