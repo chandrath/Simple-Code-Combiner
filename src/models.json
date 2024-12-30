@@ -63,10 +63,11 @@
     },
     "Local LLM": {
       "models": [
-        "Default"],
+        "Default","llama3.1:8b"],
       "api_key_field": true,
       "api_base_field": true,
       "api_organisation_field": true,
-      "token_limit_field": false
+      "token_limit_field": false,
+      "default_api_base": "http://localhost:1234/v1"
     }
   }
