@@ -149,6 +149,9 @@ class FileCombinerApp:
         self.menu.enable_save()
         self.summarize_button.config(state=tk.NORMAL)
 
+        # Show success message
+        self.error_label.config(text="Provided files now combined. You can copy to clipboard or save the file.", foreground="green")
+
     def copy_to_clipboard(self):
         combined_content = self.text_area.get(1.0, tk.END)
         self.root.clipboard_clear()
