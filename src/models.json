@@ -4,11 +4,7 @@
         "gpt-4-turbo-preview",
         "gpt-4-0125-preview",
         "gpt-4-1106-preview",
-        "gpt-4",
-        "gpt-3.5-turbo-0125",
-        "gpt-3.5-turbo-1106",
-        "gpt-3.5-turbo",
-        "gpt-3.5-turbo-instruct"
+        "gpt-4"
       ],
       "api_key_field": true,
       "api_base_field": true,
@@ -66,7 +62,8 @@
       "token_limit_field": false
     },
     "Local LLM": {
-      "models": [],
+      "models": [
+        "Default"],
       "api_key_field": true,
       "api_base_field": true,
       "api_organisation_field": true,
