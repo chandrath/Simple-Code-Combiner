@@ -1,7 +1,7 @@
 # ui.py
 # ui.py
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
 from tkinterdnd2 import DND_FILES
 import ttkbootstrap as ttk
 from file_combiner import FileCombinerBackend
@@ -13,7 +13,7 @@ class FileCombinerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Code Combiner")
-        self.root.geometry("300x450")
+        self.root.geometry("300x550")
 
         # Initialize the backend logic
         self.backend = FileCombinerBackend()
@@ -42,16 +42,26 @@ class FileCombinerApp:
         self.text_area = tk.Text(self.frame, height=10, width=50, wrap=tk.WORD)
         self.text_area.pack(pady=10, fill=tk.BOTH, expand=True)
 
+        # Frame for buttons at the bottom of the text area
+        self.button_frame = ttk.Frame(self.frame)
+        self.button_frame.pack(fill=tk.X, padx=10, pady=(0, 5))
+        self.button_frame.columnconfigure(0, weight=1)
+        self.button_frame.columnconfigure(1, weight=1)
+
+        # AI Summarize button (moved and styled)
+        self.summarize_button = ttk.Button(self.button_frame, text="AI Summarize", command=self.summarize_combined_text, state=tk.DISABLED, style="info.Outline.TButton", padding=2)
+        self.summarize_button.grid(row=0, column=0, sticky="w")
+
+        # Download button (icon only)
+        self.download_button = ttk.Button(self.button_frame, text="⤓", command=self.save_combined_file, state=tk.DISABLED, width=3)
+        self.download_button.grid(row=0, column=1, sticky="e")
+
         # **New: Error/Warning display area**
         self.error_frame = ttk.Frame(self.frame, padding=5)
-        self.error_frame.pack(fill=tk.X, pady=(0, 5))
+        self.error_frame.pack(fill=tk.X, padx=10, pady=(0, 5))
         self.error_label = ttk.Label(self.error_frame, text="", foreground="red", wraplength=280)
         self.error_label.pack(fill=tk.X)
         self.error_label.grid_propagate(False) # Prevent resizing based on content
-
-        # Create a button to summarize text
-        self.summarize_button = ttk.Button(self.frame, text="AI Summarize", command=self.summarize_combined_text, state=tk.DISABLED)
-        self.summarize_button.pack(pady=5)
 
         # Create a button to combine files
         self.combine_button = ttk.Button(self.frame, text="Combine Files", command=self.combine_files)
@@ -147,8 +157,9 @@ class FileCombinerApp:
         self.text_area.insert(tk.END, combined_content)
         self.text_area.tag_remove("error", "1.0", tk.END)
 
-        # Enable the copy button and save option after combining files
+        # Enable the copy and download buttons
         self.copy_button.config(state=tk.NORMAL)
+        self.download_button.config(state=tk.NORMAL)
         self.menu.enable_save()
         self.summarize_button.config(state=tk.NORMAL)
 
@@ -169,6 +180,7 @@ class FileCombinerApp:
         self.text_area.delete(1.0, tk.END)
         self.backend.clear_file_paths()
         self.copy_button.config(state=tk.DISABLED)
+        self.download_button.config(state=tk.DISABLED)
         self.menu.disable_save()
         self.summarize_button.config(state=tk.DISABLED)
         self.clear_error()
