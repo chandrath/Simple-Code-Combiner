@@ -93,12 +93,15 @@ class FileCombinerApp:
     def import_folder(self, folder_path):
         for file_path in self.backend.get_files_from_folder(folder_path):
             self.import_file(file_path)
+        if file_path:  # Enable combine button if files were added
+            self.combine_button.config(state=tk.NORMAL)
 
     def import_file(self, file):
         if self.backend.is_supported_file(file):
             self.backend.add_file_path(file)
             self.text_area.insert(tk.END, f"{file}\n")
             self.clear_error() # Clear any previous error
+            self.combine_button.config(state=tk.NORMAL) # Enable combine button
         else:
             self.display_error(f"Unsupported extension - {file}. If it's a code file, use 'Preferences -> Manage Extensions' to add it.")
 
@@ -152,6 +155,9 @@ class FileCombinerApp:
         # Show success message
         self.error_label.config(text="Provided files now combined. You can copy to clipboard or save the file.", foreground="green")
 
+        # Disable the combine button
+        self.combine_button.config(state=tk.DISABLED)
+
     def copy_to_clipboard(self):
         combined_content = self.text_area.get(1.0, tk.END)
         self.root.clipboard_clear()
@@ -166,6 +172,7 @@ class FileCombinerApp:
         self.menu.disable_save()
         self.summarize_button.config(state=tk.DISABLED)
         self.clear_error()
+        self.combine_button.config(state=tk.NORMAL) # Enable combine button
         logging.info("Text area cleared.")
 
     def save_combined_file(self):
