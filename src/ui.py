@@ -57,12 +57,9 @@ class FileCombinerApp:
         self.summarize_button = ttk.Button(self.button_frame, text="AI Summarize", command=self.summarize_combined_text, state=tk.DISABLED, style="info.Outline.TButton", padding=2)
         self.summarize_button.grid(row=0, column=0, sticky="w")
 
-        # **Move: Clear button to the right side of button_frame**
-        self.clear_button = ttk.Button(self.button_frame, text="Clear", command=self.clear_text, style='Danger.TButton')
+        # Clear button (moved and styled)
+        self.clear_button = ttk.Button(self.button_frame, text="Clear", command=self.clear_text, state=tk.DISABLED, style="danger.Outline.TButton", padding=2)
         self.clear_button.grid(row=0, column=1, sticky="e")
-
-        # **Move: Download button below "Copy to Clipboard"**
-        self.download_button = ttk.Button(self.frame, text="⤓", command=self.save_combined_file, state=tk.DISABLED, width=3)
 
         # **New: Error/Warning display area**
         self.error_frame = ttk.Frame(self.frame, padding=5)
@@ -79,7 +76,8 @@ class FileCombinerApp:
         self.copy_button = ttk.Button(self.frame, text="Copy to Clipboard", command=self.copy_to_clipboard, state=tk.DISABLED)
         self.copy_button.pack(pady=5)
 
-        # **Move: Download button here, below "Copy to Clipboard"**
+        # Download button (icon only) - moved
+        self.download_button = ttk.Button(self.frame, text="⤓", command=self.save_combined_file, state=tk.DISABLED, width=3)
         self.download_button.pack(pady=5)
 
         # Initialize the list to hold file paths (managed by backend)
@@ -182,6 +180,7 @@ class FileCombinerApp:
         self.download_button.config(state=tk.NORMAL)
         self.menu.enable_save()
         self.summarize_button.config(state=tk.NORMAL)
+        self.clear_button.config(state=tk.NORMAL)
 
         # Show success message
         self.error_label.config(text="Provided files now combined. You can copy to clipboard or save the file.", foreground="green")
@@ -203,6 +202,7 @@ class FileCombinerApp:
         self.download_button.config(state=tk.DISABLED)
         self.menu.disable_save()
         self.summarize_button.config(state=tk.DISABLED)
+        self.clear_button.config(state=tk.DISABLED) # Disable clear button when cleared
         self.clear_error()
         self.combine_button.config(state=tk.NORMAL) # Enable combine button
         self.token_count_label.config(text="") # Clear token count
@@ -224,3 +224,8 @@ class FileCombinerApp:
                 logging.info(f"Combined content saved to {file_path}")
             except Exception as e:
                 logging.error(f"Error saving file: {e}")
+
+if __name__ == "__main__":
+    root = ttk.Window(themename="litera")
+    app = FileCombinerApp(root)
+    root.mainloop()
