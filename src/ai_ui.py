@@ -140,10 +140,11 @@ class AIConfigurationDialog:
         # Input Token Limit
         input_limit_frame = ttk.Frame(frame)
         config_widgets["input_token_limit_enabled_var"] = tk.BooleanVar(value=provider_config.get("input_token_limit_enabled", True)) # Set default to True
-        input_checkbox = ttk.Checkbutton(input_limit_frame, text="Enable Input Token Limit", variable=config_widgets["input_token_limit_enabled_var"])
+        input_checkbox = ttk.Checkbutton(input_limit_frame, text="Enable Input Token Limit", variable=config_widgets["input_token_limit_enabled_var"], command=lambda: self.toggle_limit_entry(provider_name, "input"))
         input_checkbox.pack(side="left", padx=5)
         ttk.Label(input_limit_frame, text="Limit:").pack(side="left", padx=5)
-        input_limit_entry = ttk.Entry(input_limit_frame, name="input_token_limit")
+        input_limit_entry = ttk.Entry(input_limit_frame, name="input_token_limit", validate="key")
+        input_limit_entry['validatecommand'] = (input_limit_entry.register(self.validate_integer_input), '%S')
         input_limit_entry.insert(0, provider_config.get("input_token_limit", "1024")) # Set default limit to 1024
         input_limit_entry.pack(side="left", fill="x", expand=True, padx=5)
         input_limit_frame.pack(fill="x", padx=10, pady=5)
@@ -152,10 +153,11 @@ class AIConfigurationDialog:
         # Output Token Limit
         output_limit_frame = ttk.Frame(frame)
         config_widgets["output_token_limit_enabled_var"] = tk.BooleanVar(value=provider_config.get("output_token_limit_enabled", False))
-        output_checkbox = ttk.Checkbutton(output_limit_frame, text="Enable Output Token Limit", variable=config_widgets["output_token_limit_enabled_var"])
+        output_checkbox = ttk.Checkbutton(output_limit_frame, text="Enable Output Token Limit", variable=config_widgets["output_token_limit_enabled_var"], command=lambda: self.toggle_limit_entry(provider_name, "output"))
         output_checkbox.pack(side="left", padx=5)
         ttk.Label(output_limit_frame, text="Limit:").pack(side="left", padx=5)
-        output_limit_entry = ttk.Entry(output_limit_frame, name="output_token_limit")
+        output_limit_entry = ttk.Entry(output_limit_frame, name="output_token_limit", validate="key")
+        output_limit_entry['validatecommand'] = (output_limit_entry.register(self.validate_integer_input), '%S')
         output_limit_entry.insert(0, provider_config.get("output_token_limit", ""))
         output_limit_entry.pack(side="left", fill="x", expand=True, padx=5)
         output_limit_frame.pack(fill="x", padx=10, pady=5)
@@ -184,6 +186,8 @@ class AIConfigurationDialog:
         self.on_provider_change()
         for provider_name in self.available_providers:
             self.toggle_custom_model(provider_name)
+            self.toggle_limit_entry(provider_name, "input")
+            self.toggle_limit_entry(provider_name, "output")
         self.update_model_display()
 
     def on_provider_change(self, *args):
@@ -203,6 +207,19 @@ class AIConfigurationDialog:
             if not custom_enabled:
                 self.config_widgets[provider_name]["custom_model"].delete(0, tk.END) # Clear custom input
             self.update_model_display()
+
+    def toggle_limit_entry(self, provider_name, limit_type):
+        if provider_name in self.config_widgets:
+            if limit_type == "input":
+                enabled = self.config_widgets[provider_name]["input_token_limit_enabled_var"].get()
+                self.config_widgets[provider_name]["input_token_limit"].config(state=tk.NORMAL if enabled else tk.DISABLED)
+            elif limit_type == "output":
+                enabled = self.config_widgets[provider_name]["output_token_limit_enabled_var"].get()
+                self.config_widgets[provider_name]["output_token_limit"].config(state=tk.NORMAL if enabled else tk.DISABLED)
+
+
+    def validate_integer_input(self, input_text):
+        return input_text.isdigit() or input_text == ""
 
 
     def update_model_display(self, event=None):
