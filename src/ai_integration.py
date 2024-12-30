@@ -7,6 +7,7 @@ import logging
 import os
 import tkinter as tk
 from tkinter import messagebox
+import requests
 
 class AIProvider:
     def __init__(self, provider_name, settings):
@@ -72,7 +73,7 @@ class AIProvider:
             max_tokens = int(anthropic_max_tokens) if anthropic_max_tokens else output_token_limit
             return self._summarize_with_anthropic(text, model=model, max_tokens=max_tokens)
         elif self.provider_name == "Local LLM":
-            return self._summarize_with_local_llm(text)
+            return self._summarize_with_local_llm(text, model=model, api_base=api_base, max_tokens=output_token_limit)
         elif self.provider_name == "Google":
             return self._summarize_with_gemini(text, model=model)
         else:
@@ -112,9 +113,23 @@ class AIProvider:
         except Exception as e:
             raise Exception(f"Anthropic API error: {e}")
 
-    def _summarize_with_local_llm(self, text):
-        # Placeholder for local LLM implementation (e.g., using llama.cpp, KoboldCpp, LM Studio APIs)
-        raise NotImplementedError("Local LLM integration is not yet implemented.")
+    def _summarize_with_local_llm(self, text, model, api_base, max_tokens=None):
+        headers = {'Content-Type': 'application/json'}
+        payload = {
+            "model": model,
+            "messages": [
+                 {"role": "system", "content": "Summarize the following text:"},
+                 {"role": "user", "content": text}
+            ]
+        }
+        if max_tokens:
+            payload["max_tokens"] = max_tokens
+        try:
+          response = requests.post(f"{api_base}/chat/completions", headers=headers, json=payload)
+          response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+          return response.json()["choices"][0]["message"]["content"]
+        except requests.exceptions.RequestException as e:
+          raise Exception(f"Local LLM API error: {e}")
 
     def _summarize_with_gemini(self, text, model):
         import google.generativeai as genai
@@ -163,7 +178,7 @@ def load_models(models_file=None):
 
 def summarize_text(text, config_file="llm_config.json", pref_file="preferences.json", app=None):
     all_prefs = load_preferences(pref_file)
-    provider_name = all_prefs.get("current_provider", "OpenAI")
+    provider_name = all_prefs.get("current_provider", "Google") # Set default provider to Google
     provider_config = all_prefs.get(provider_name, {})
     try:
         provider = AIProvider(provider_name, provider_config)

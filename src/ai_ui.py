@@ -61,7 +61,7 @@ class AIConfigurationDialog:
 
         self.available_providers = sorted(list(self.models_data.keys()))
         self.provider_var = tk.StringVar(self.dialog)
-        self.current_provider = self.all_prefs.get("current_provider")
+        self.current_provider = self.all_prefs.get("current_provider", "Google") # Set default provider to Google
         if not self.current_provider or self.current_provider not in self.available_providers:
             self.current_provider = self.available_providers[0] if self.available_providers else ""
         self.provider_var.set(self.current_provider)

@@ -1,1 +1,4 @@
 pyinstaller -F --additional-hooks-dir=. --onefile --windowed --icon=app.ico --add-data "models.json:." main.py
+
+
+http://localhost:11434
