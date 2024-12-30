@@ -1,4 +1,3 @@
-# file_combiner.py
 import os
 import json
 import re
@@ -71,8 +70,11 @@ class FileCombinerBackend:
             try:
                 file_name = os.path.basename(file_path)
                 combined_content += f"# {file_name}\n"
-                with open(file_path, 'r') as f:
+                with open(file_path, 'r', encoding='utf-8') as f:
                     combined_content += f.read() + "\n\n"
+            except UnicodeDecodeError as e:
+                logging.error(f"UnicodeDecodeError reading {file_path}: {e}")
+                combined_content += f"Error reading file {file_name}: Could not decode.\n\n"
             except Exception as e:
                 logging.error(f"Error reading file - {file_path}: {e}")
                 continue
