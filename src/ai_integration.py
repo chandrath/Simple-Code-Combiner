@@ -1,6 +1,7 @@
 # ai_integration.py
 # ai_integration.py
 # ai_integration.py
+# ai_integration.py
 import json
 import logging
 import os
@@ -52,6 +53,13 @@ class AIProvider:
             logging.warning(f"No model selected for {self.provider_name}. Using default model: {model}")
         elif not model:
             raise ValueError(f"No model configured for the selected AI provider: {self.provider_name}")
+        
+        custom_model_enabled = self.settings.get("custom_model_enabled", False)
+        if custom_model_enabled:
+          model = self.settings.get("custom_model")
+          if not model:
+             raise ValueError(f"Custom model is enabled but no custom model is specified.")
+
 
         if self.provider_name == "OpenAI":
             return self._summarize_with_openai(text, model=model, api_base=api_base, max_tokens=output_token_limit)

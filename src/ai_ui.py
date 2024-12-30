@@ -108,6 +108,17 @@ class AIConfigurationDialog:
         provider_config = self.all_prefs.get(provider_name, {})
         models_for_provider = self.models_data.get(provider_name, {})
 
+        # Custom Model Input
+        custom_model_frame = ttk.Frame(frame)
+        config_widgets["custom_model_enabled_var"] = tk.BooleanVar(value=provider_config.get("custom_model_enabled", False))
+        custom_checkbox = ttk.Checkbutton(custom_model_frame, text="Custom Model", variable=config_widgets["custom_model_enabled_var"], command=lambda: self.toggle_custom_model(provider_name))
+        custom_checkbox.pack(side="left", padx=5)
+        custom_model_entry = ttk.Entry(custom_model_frame, name="custom_model")
+        custom_model_entry.insert(0, provider_config.get("custom_model", ""))
+        custom_model_entry.pack(side="left", fill="x", expand=True, padx=5)
+        custom_model_frame.pack(fill="x", padx=10, pady=5)
+        config_widgets["custom_model"] = custom_model_entry
+
         # Model Selection
         if provider_name in self.models_data:
             model_frame = ttk.Frame(frame)
@@ -171,6 +182,8 @@ class AIConfigurationDialog:
 
     def load_saved_values(self):
         self.on_provider_change()
+        for provider_name in self.available_providers:
+            self.toggle_custom_model(provider_name)
         self.update_model_display()
 
     def on_provider_change(self, *args):
@@ -182,11 +195,28 @@ class AIConfigurationDialog:
                 frame.grid_remove()
         self.update_model_display()
 
+    def toggle_custom_model(self, provider_name):
+        if provider_name in self.config_widgets:
+            custom_enabled = self.config_widgets[provider_name]["custom_model_enabled_var"].get()
+            self.config_widgets[provider_name]["custom_model"].config(state=tk.NORMAL if custom_enabled else tk.DISABLED)
+            self.config_widgets[provider_name]["model"].config(state=tk.DISABLED if custom_enabled else "readonly")
+            if not custom_enabled:
+                self.config_widgets[provider_name]["custom_model"].delete(0, tk.END) # Clear custom input
+            self.update_model_display()
+
+
     def update_model_display(self, event=None):
          provider = self.provider_var.get()
-         if provider in self.config_widgets and "model_var" in self.config_widgets[provider]:
-            selected_model = self.config_widgets[provider]["model_var"].get()
+         if provider in self.config_widgets:
+            if self.config_widgets[provider]["custom_model_enabled_var"].get():
+                 selected_model = self.config_widgets[provider]["custom_model"].get()
+            elif "model_var" in self.config_widgets[provider]:
+                selected_model = self.config_widgets[provider]["model_var"].get()
+            else:
+                 selected_model = "No model selected"
+
             self.current_model_label.config(text=f"Current Model: {selected_model}")
+
          else:
             self.current_model_label.config(text="No model selected")
 
@@ -198,7 +228,13 @@ class AIConfigurationDialog:
         if selected_provider in self.config_widgets:
             config = {}
             # Correctly save the model using the model_var
-            if "model_var" in self.config_widgets[selected_provider]:
+            if  self.config_widgets[selected_provider]["custom_model_enabled_var"].get():
+                 config["custom_model_enabled"] = True
+                 config["custom_model"] = self.config_widgets[selected_provider]["custom_model"].get()
+                 config["model"] = self.config_widgets[selected_provider]["custom_model"].get()
+            elif "model_var" in self.config_widgets[selected_provider]:
+                config["custom_model_enabled"] = False
+                config["custom_model"] = ""
                 config["model"] = self.config_widgets[selected_provider]["model_var"].get()
 
 
@@ -208,7 +244,7 @@ class AIConfigurationDialog:
             config["output_token_limit"] = self.config_widgets[selected_provider].get("output_token_limit").get()
 
             for key, widget in self.config_widgets[selected_provider].items():
-                if key not in ["model", "input_token_limit", "output_token_limit", "model_var"] and isinstance(widget, ttk.Entry):
+                if key not in ["model", "input_token_limit", "output_token_limit", "model_var", "custom_model", "custom_model_enabled_var"] and isinstance(widget, ttk.Entry):
                     config[key] = widget.get()
 
             self.all_prefs[selected_provider] = config
@@ -235,6 +271,8 @@ class AIConfigurationDialog:
                     #Reset to deafult
                     self.config_widgets[provider_name]["input_token_limit_enabled_var"].set(False)
                     self.config_widgets[provider_name]["output_token_limit_enabled_var"].set(False)
+                    self.config_widgets[provider_name]["custom_model_enabled_var"].set(False)
+                    self.config_widgets[provider_name]["custom_model"].delete(0, tk.END)
                     if "model_var" in self.config_widgets[provider_name]:
                         sorted_models = sorted(self.models_data[provider_name]['models'])
                         self.config_widgets[provider_name]["model_var"].set(sorted_models[0] if sorted_models else "")
