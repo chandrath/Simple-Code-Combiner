@@ -269,9 +269,13 @@ class AIConfigurationDialog:
             config = {}
             # Correctly save the model using the model_var
             if  self.config_widgets[selected_provider]["custom_model_enabled_var"].get():
-                 config["custom_model_enabled"] = True
-                 config["custom_model"] = self.config_widgets[selected_provider]["custom_model"].get()
-                 config["model"] = self.config_widgets[selected_provider]["custom_model"].get()
+                custom_model = self.config_widgets[selected_provider]["custom_model"].get().strip()
+                if not custom_model:
+                    messagebox.showwarning("Missing Input", "Please input the custom model name")
+                    return
+                config["custom_model_enabled"] = True
+                config["custom_model"] = custom_model
+                config["model"] = custom_model
             elif "model_var" in self.config_widgets[selected_provider]:
                 config["custom_model_enabled"] = False
                 config["custom_model"] = ""
