@@ -1,4 +1,3 @@
-````markdown
 <!-- Cover Icon -->
 <p align="center">
   <img src="Cover Icon.png" alt="Simple Code Combiner Icon" width="200" height="200">
@@ -121,11 +120,12 @@ To create a standalone executable for the `CodeCombiner` application (which uses
 1.  **Prepare Project Files:** Ensure your main project file (`main.py`) and the hook file (`hook-tkinterdnd2.py`) are in the **same directory**.
 
 2.  **Obtain `hook-tkinterdnd2.py`:** Download `hook-tkinterdnd2.py` and save it in the same directory as your `main.py` file. The original file (under MIT License) can be obtained from:
-````
+
+```
 
 https://github.com/pmgagne/tkinterdnd2/blob/master/hook-tkinterdnd2.py
 
-````
+```
 
     *Note: If you are working with an updated version or fork, make sure to use the corresponding hook file (if needed).*
 
@@ -135,7 +135,9 @@ _A modified version of the hook file that resolves certain issues can be used fr
 
    ```bash
    pyinstaller -F --additional-hooks-dir=. --onefile --windowed --icon=app.ico CodeCombiner.py
-````
+   ```
+
+```
 
 - **`-F` or `--onefile`**: Creates a single, self-contained executable file.
 - **`--additional-hooks-dir=.`**: Tells PyInstaller to use the `hook-tkinterdnd2.py` file in the current directory to correctly include `tkinterdnd2` files.
@@ -170,3 +172,4 @@ These instructions are partially based on the information available in the `tkin
 ## License
 
 - "Simple Code Combiner" uses the GPLv3 license
+```
