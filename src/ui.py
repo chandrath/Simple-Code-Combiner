@@ -119,11 +119,11 @@ class FileCombinerApp:
             self.open_files()
 
     def display_error(self, message):
-        self.error_label.config(text=message)
+        self.error_label.config(text=message, foreground="red")
         logging.error(message)
 
     def clear_error(self):
-        self.error_label.config(text="")
+        self.error_label.config(text="", foreground="red")
 
     def summarize_combined_text(self):
         combined_content = self.text_area.get(1.0, tk.END).strip()
@@ -153,7 +153,7 @@ class FileCombinerApp:
         combined_content = self.text_area.get(1.0, tk.END)
         self.root.clipboard_clear()
         self.root.clipboard_append(combined_content.strip())
-        messagebox.showinfo("Copied", "Combined text copied to clipboard!")
+        self.error_label.config(text="Combined text copied to clipboard!", foreground="green")
         logging.info("Combined content copied to clipboard.")
 
     def clear_text(self):
