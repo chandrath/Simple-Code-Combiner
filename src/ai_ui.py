@@ -144,7 +144,8 @@ class AIConfigurationDialog:
 
         # Input Token Limit
         input_limit_frame = ttk.Frame(frame)
-        config_widgets["input_token_limit_enabled_var"] = tk.BooleanVar(value=provider_config.get("input_token_limit_enabled", True)) # Set default to True
+        default_input_limit_enabled = True if provider_name != "Local LLM" else False
+        config_widgets["input_token_limit_enabled_var"] = tk.BooleanVar(value=provider_config.get("input_token_limit_enabled", default_input_limit_enabled))
         input_checkbox = ttk.Checkbutton(input_limit_frame, text="Enable Input Token Limit", variable=config_widgets["input_token_limit_enabled_var"], command=lambda: self.toggle_limit_entry(provider_name, "input"))
         input_checkbox.pack(side="left", padx=5)
         ttk.Label(input_limit_frame, text="Limit:").pack(side="left", padx=5)
