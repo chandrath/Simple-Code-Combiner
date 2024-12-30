@@ -57,9 +57,12 @@ class FileCombinerApp:
         self.summarize_button = ttk.Button(self.button_frame, text="AI Summarize", command=self.summarize_combined_text, state=tk.DISABLED, style="info.Outline.TButton", padding=2)
         self.summarize_button.grid(row=0, column=0, sticky="w")
 
-        # Download button (icon only)
-        self.download_button = ttk.Button(self.button_frame, text="⤓", command=self.save_combined_file, state=tk.DISABLED, width=3)
-        self.download_button.grid(row=0, column=1, sticky="e")
+        # **Move: Clear button to the right side of button_frame**
+        self.clear_button = ttk.Button(self.button_frame, text="Clear", command=self.clear_text, style='Danger.TButton')
+        self.clear_button.grid(row=0, column=1, sticky="e")
+
+        # **Move: Download button below "Copy to Clipboard"**
+        self.download_button = ttk.Button(self.frame, text="⤓", command=self.save_combined_file, state=tk.DISABLED, width=3)
 
         # **New: Error/Warning display area**
         self.error_frame = ttk.Frame(self.frame, padding=5)
@@ -76,9 +79,8 @@ class FileCombinerApp:
         self.copy_button = ttk.Button(self.frame, text="Copy to Clipboard", command=self.copy_to_clipboard, state=tk.DISABLED)
         self.copy_button.pack(pady=5)
 
-        # Create a clear button
-        self.clear_button = ttk.Button(self.frame, text="Clear", command=self.clear_text, style='Danger.TButton')
-        self.clear_button.pack(pady=5)
+        # **Move: Download button here, below "Copy to Clipboard"**
+        self.download_button.pack(pady=5)
 
         # Initialize the list to hold file paths (managed by backend)
 
@@ -128,7 +130,6 @@ class FileCombinerApp:
             self.combine_button.config(state=tk.NORMAL)  # Enable combine button
         else:
             self.display_error(f"Unsupported extension - {file_path}. If it's a code file, use 'Preferences -> Manage Extensions' to add it.")
-
 
     def open_files(self):
         files = filedialog.askopenfilenames(filetypes=[("All files", "*.*")])
