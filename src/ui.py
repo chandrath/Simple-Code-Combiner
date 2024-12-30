@@ -13,7 +13,7 @@ class FileCombinerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Code Combiner")
-        self.root.geometry("300x550")
+        self.root.geometry("300x550")  # Assuming this is the geometry you are using
 
         # Initialize the backend logic
         self.backend = FileCombinerBackend()
@@ -55,6 +55,10 @@ class FileCombinerApp:
         # Download button (icon only)
         self.download_button = ttk.Button(self.button_frame, text="⤓", command=self.save_combined_file, state=tk.DISABLED, width=3)
         self.download_button.grid(row=0, column=1, sticky="e")
+
+        # Token count label
+        self.token_count_label = ttk.Label(self.button_frame, text="", foreground="grey", font=("Arial", 8))
+        self.token_count_label.grid(row=1, column=0, columnspan=2, pady=(0, 5))  # Place below buttons, spanning columns
 
         # **New: Error/Warning display area**
         self.error_frame = ttk.Frame(self.frame, padding=5)
@@ -151,6 +155,8 @@ class FileCombinerApp:
             return
 
         combined_content = self.backend.combine_files()
+        token_count = len(combined_content.split())  # Simple word count for token estimation
+        self.token_count_label.config(text=f"Token Count: {token_count}")
 
         # Display combined content in the text area
         self.text_area.delete(1.0, tk.END)
@@ -185,6 +191,7 @@ class FileCombinerApp:
         self.summarize_button.config(state=tk.DISABLED)
         self.clear_error()
         self.combine_button.config(state=tk.NORMAL) # Enable combine button
+        self.token_count_label.config(text="")  # Clear token count
         logging.info("Text area cleared.")
 
     def save_combined_file(self):
