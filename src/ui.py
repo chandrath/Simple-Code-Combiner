@@ -1,5 +1,6 @@
 # ui.py
 # ui.py
+# ui.py
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from tkinterdnd2 import DND_FILES
@@ -43,9 +44,19 @@ class FileCombinerApp:
         self.label = ttk.Label(self.frame, text="Drag and drop code files here", font=("Arial", 14))
         self.label.pack(pady=10)
 
-        # Add button to open files/folders
-        self.open_button = ttk.Button(self.frame, text="Or click here to open files/folder", command=self.open_files_or_folder, style="Link.TButton")
+        # **Modified Button for File/Folder Selection**
+        self.open_button = ttk.Button(
+            self.frame,
+            text="Or click here to open files/folder",
+            command=self.show_file_folder_menu,
+            style="Link.TButton"
+        )
         self.open_button.pack()
+
+        # Create the menu for file/folder selection
+        self.file_folder_menu = tk.Menu(self.open_button, tearoff=0)
+        self.file_folder_menu.add_command(label="Files", command=self.open_files)
+        self.file_folder_menu.add_command(label="Folder", command=self.open_folder)
 
         # **New: Token count label**
         self.token_count_label = ttk.Label(self.frame, text="", foreground="grey", font=("Arial", 8))
@@ -190,11 +201,8 @@ class FileCombinerApp:
         if folder:
             self.import_folder(folder)
 
-    def open_files_or_folder(self):
-        if messagebox.askyesno("Open Option", "Would you like to open a folder?\n(Click 'No' to open files instead)"):
-            self.open_folder()
-        else:
-            self.open_files()
+    def show_file_folder_menu(self):
+        self.file_folder_menu.post(self.open_button.winfo_rootx(), self.open_button.winfo_rooty() + self.open_button.winfo_height())
 
     def display_error(self, message):
         self.error_label.config(text=message, foreground="red")
