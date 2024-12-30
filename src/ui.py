@@ -8,6 +8,7 @@ from file_combiner import FileCombinerBackend
 from ui_menu import FileCombinerMenu
 import logging
 import os  # Import os for path manipulation
+import time  # Import the time module
 
 try:
     import tiktoken
@@ -103,11 +104,33 @@ class FileCombinerApp:
         self.download_button = ttk.Button(self.frame, text="Download ⤓", command=self.save_combined_file, state=tk.DISABLED, width=10)  # Changed text and adjusted width
         self.download_button.pack(pady=5)
 
+        # Progress bar at the bottom
+        self.progressbar = ttk.Progressbar(self.root, orient=tk.HORIZONTAL, mode='indeterminate')
+        self.progressbar.pack(side=tk.BOTTOM, fill=tk.X, pady=(0, 2))
+        self.progressbar.lower()  # Ensure progressbar is at the very bottom
+        self.initial_loading()
+
         # Initialize the list to hold file paths (managed by backend)
 
         # Set up drag and drop
         self.setup_drag_and_drop()
         self.load_config() # Load config after initializing backend and menu
+
+    def initial_loading(self):
+        self.start_progress()
+        self.root.after(1000, self.stop_initial_progress) # Keep it for 1 second
+
+    def stop_initial_progress(self):
+        self.stop_progress()
+
+    def start_progress(self):
+        self.progressbar.pack(side=tk.BOTTOM, fill=tk.X, pady=(0, 2))
+        self.progressbar.start()
+        self.progressbar.lower()
+
+    def stop_progress(self):
+        self.progressbar.stop()
+        self.root.after(300, self.progressbar.pack_forget) # Keep it visible for 300ms
 
     def load_config(self):
         self.backend.load_config()
@@ -243,8 +266,15 @@ class FileCombinerApp:
             messagebox.showwarning("No Files", "Please add files first.")
             return
 
+        self.start_progress() # Start progress before a potentially long operation
+        self.root.update() # Force UI update to show progress bar immediately
+        start_time = time.time() # For measuring execution time
+
         combined_content = self.backend.combine_files()
         token_count = self.calculate_token_count(combined_content)
+
+        end_time = time.time()
+        print(f"combine_files execution time: {end_time - start_time:.4f} seconds")
 
         # Display token count
         self.token_count_label.config(text=f"Token Count: {token_count}")
@@ -266,6 +296,7 @@ class FileCombinerApp:
 
         # Disable the combine button
         self.combine_button.config(state=tk.DISABLED)
+        self.root.after(300, self.stop_progress) # Keep progress bar for a short duration
 
     def copy_to_clipboard(self):
         combined_content = self.text_area.get(1.0, tk.END)
