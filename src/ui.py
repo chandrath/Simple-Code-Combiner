@@ -62,15 +62,15 @@ class FileCombinerApp:
         self.button_frame = ttk.Frame(self.frame)
         self.button_frame.pack(fill=tk.X, padx=10, pady=(0, 5))
         self.button_frame.columnconfigure(0, weight=1)
-        self.button_frame.columnconfigure(1, weight=1)
-        self.button_frame.columnconfigure(2, weight=0) # For edit button
+        self.button_frame.columnconfigure(1, weight=0)
+        self.button_frame.columnconfigure(2, weight=0) # For clear button
 
         # AI Summarize button (moved and styled)
         self.summarize_button = ttk.Button(self.button_frame, text="AI Summarize", command=self.summarize_combined_text, state=tk.DISABLED, style="secondary.Outline.TButton", padding=2)
         self.summarize_button.grid(row=0, column=0, sticky="w")
 
         # Edit button
-        self.edit_button = ttk.Button(self.button_frame, text="Edit", command=self.open_edit_files_popup, state=tk.DISABLED)
+        self.edit_button = ttk.Button(self.button_frame, text="Edit", command=self.open_edit_files_popup, state=tk.DISABLED, style="dark.Outline.TButton", padding=2)
         self.edit_button.grid(row=0, column=1, sticky="e", padx=(0,5))
 
         # Clear button (moved and styled)
@@ -191,7 +191,7 @@ class FileCombinerApp:
             file_name = os.path.basename(file_path)
             ttk.Label(file_frame, text=file_name).pack(side=tk.LEFT, expand=True, fill=tk.X)
 
-            remove_button = ttk.Button(file_frame, text="❌", width=3, command=lambda path=file_path: self.remove_file(path, popup))
+            remove_button = ttk.Button(file_frame, text="❌", width=3, style="danger.TButton", command=lambda path=file_path: self.remove_file(path, popup))
             remove_button.pack(side=tk.RIGHT)
 
     def remove_file(self, file_path, popup):
