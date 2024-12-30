@@ -98,10 +98,15 @@ class AIConfigurationDialog:
 
         self.current_model_label.grid(row=2, column=0, sticky="ew", padx=10, pady=5)
 
-        # Default settings Button
-        ttk.Button(self.dialog, text="Default Settings", command=self.reset_to_defaults).grid(row=3, column=0, pady=10)
 
-        ttk.Button(self.dialog, text="Save", command=self.save_configuration).grid(row=4, column=0, pady=10)
+        # Save Button
+        save_button = ttk.Button(self.dialog, text="Save", command=self.save_configuration)
+        save_button.grid(row=3, column=0, pady=5)
+        # Default settings Button
+        self.default_button = ttk.Button(self.dialog, text="Default Settings", command=self.reset_to_defaults, style="Link.TButton")
+        self.default_button.grid(row=4, column=0, pady=5)
+        self.default_button.config(padding=0)
+
 
     def populate_config_frame(self, provider_name, frame):
         config_widgets = {}
@@ -175,12 +180,30 @@ class AIConfigurationDialog:
                 default_value = models_for_provider.get(f"default_{field_name}")
                 entry_value = provider_config.get(field_name, default_value if default_value is not None else "")
                 entry = ttk.Entry(entry_frame, name=field_name)
-                entry.insert(0, entry_value)
+                if field_name in ["api_base", "api_organisation"]:
+                     entry.insert(0, entry_value)
+                     entry.bind("<FocusIn>", lambda event, entry=entry: self.handle_focus_in(event, entry, "leave blank if not applicable"))
+                     entry.bind("<FocusOut>", lambda event, entry=entry: self.handle_focus_out(event, entry, "leave blank if not applicable"))
+                     self.handle_focus_out(None, entry, "leave blank if not applicable")
+                else:
+                  entry.insert(0, entry_value)
                 entry.pack(side="left", fill="x", expand=True, padx=5)
                 entry_frame.pack(fill="x", padx=10, pady=5)
                 config_widgets[field_name] = entry
 
+
         self.config_widgets[provider_name] = config_widgets
+
+    def handle_focus_in(self, event, entry, placeholder):
+        if entry.get() == placeholder:
+            entry.delete(0, tk.END)
+            entry.config(foreground="black")
+
+    def handle_focus_out(self, event, entry, placeholder):
+        if not entry.get():
+             entry.insert(0, placeholder)
+             entry.config(foreground="grey")
+
 
     def load_saved_values(self):
         self.on_provider_change()
