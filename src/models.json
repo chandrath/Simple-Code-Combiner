@@ -13,7 +13,7 @@
       "api_key_field": true,
       "api_base_field": true,
       "api_organisation_field": true,
-      "token_limit_field": true,
+      "token_limit_field": false,
       "default_api_base": "https://api.openai.com/v1"
     },
     "Groq": {
@@ -24,7 +24,7 @@
       "api_key_field": true,
       "api_base_field": true,
       "api_organisation_field": true,
-      "token_limit_field": true,
+      "token_limit_field": false,
       "default_api_base": "https://api.groq.com/openai/v1"
     },
     "Google": {
@@ -38,7 +38,7 @@
       "api_key_field": true,
       "api_base_field": false,
       "api_organisation_field": false,
-      "token_limit_field": true
+      "token_limit_field": false
     },
     "Anthropic": {
       "models": [
@@ -48,10 +48,10 @@
         "claude-2.0"
       ],
       "api_key_field": true,
-      "api_base_field": true,
-      "api_organisation_field": true,
-      "token_limit_field": true,
-      "anthropic_max_tokens_field": true
+      "api_base_field": false,
+      "api_organisation_field": false,
+      "token_limit_field": false,
+      "anthropic_max_tokens_field": false
     },
     "Mistral AI": {
       "models": [
@@ -61,34 +61,15 @@
         "mistral-tiny-latest"
       ],
       "api_key_field": true,
-      "api_base_field": true,
-      "api_organisation_field": true,
-      "token_limit_field": true
+      "api_base_field": false,
+      "api_organisation_field": false,
+      "token_limit_field": false
     },
     "Local LLM": {
       "models": [],
       "api_key_field": true,
       "api_base_field": true,
       "api_organisation_field": true,
-      "token_limit_field": true
-    },
-    "Manual": {
-      "models": [],
-      "api_key_field": true,
-      "api_base_field": true,
-      "api_organisation_field": true,
-      "token_limit_field": true
-    },
-    "AExample 2073": {
-      "models": [
-        "mistral-large-latest",
-        "mistral-medium-latest",
-        "mistral-small-latest",
-        "mistral-tiny-latest"
-      ],
-      "api_key_field": true,
-      "api_base_field": true,
-      "api_organisation_field": true,
-      "token_limit_field": true
+      "token_limit_field": false
     }
   }
