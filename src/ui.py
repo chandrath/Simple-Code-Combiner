@@ -8,6 +8,13 @@ from file_combiner import FileCombinerBackend
 from ui_menu import FileCombinerMenu
 import logging
 import os  # Import os for path manipulation
+
+try:
+    import tiktoken
+except ImportError:
+    tiktoken = None
+    logging.warning("The 'tiktoken' library is not installed. Token counts may be inaccurate. Install it with: pip install tiktoken")
+
 from ai_integration import summarize_text
 
 class FileCombinerApp:
@@ -93,7 +100,7 @@ class FileCombinerApp:
         self.copy_button.pack(pady=5)
 
         # Download button (icon only) - moved
-        self.download_button = ttk.Button(self.frame, text="Save ⤓", command=self.save_combined_file, state=tk.DISABLED, width=5)  # Changed text and adjusted width
+        self.download_button = ttk.Button(self.frame, text="Download ⤓", command=self.save_combined_file, state=tk.DISABLED, width=10)  # Changed text and adjusted width
         self.download_button.pack(pady=5)
 
         # Initialize the list to hold file paths (managed by backend)
@@ -213,6 +220,17 @@ class FileCombinerApp:
                 self.edit_button.config(state=tk.DISABLED)
                 self.combine_button.config(state=tk.DISABLED)
 
+    def calculate_token_count(self, text):
+        if tiktoken:
+            try:
+                encoding = tiktoken.encoding_for_model("gpt-3.5-turbo") # Or another suitable model
+                return len(encoding.encode(text))
+            except Exception as e:
+                logging.warning(f"Error calculating token count with tiktoken: {e}")
+                return len(text.split()) # Fallback to simple split
+        else:
+            return len(text.split()) # Simple split if tiktoken is not available
+
     def summarize_combined_text(self):
         combined_content = self.text_area.get(1.0, tk.END).strip()
         if not combined_content:
@@ -226,7 +244,7 @@ class FileCombinerApp:
             return
 
         combined_content = self.backend.combine_files()
-        token_count = len(combined_content.split())  # Simple word/token count
+        token_count = self.calculate_token_count(combined_content)
 
         # Display token count
         self.token_count_label.config(text=f"Token Count: {token_count}")
