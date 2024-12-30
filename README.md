@@ -1,3 +1,4 @@
+````markdown
 <!-- Cover Icon -->
 <p align="center">
   <img src="Cover Icon.png" alt="Simple Code Combiner Icon" width="200" height="200">
@@ -11,13 +12,18 @@
 
 ---
 
-In a development environment, managing multiple code files can be a cumbersome task. The "Simple Code Combiner" app streamlines your workflow by allowing you to effortlessly combine various code files into a single output while labeling each file with its extension, all with just one click. Whether you're preparing scripts for deployment, consolidating code for testing, Feeding your code to LLMs for retrieval-augmented generation (RAG)., or simply organizing your projects, this free and open-source GUI tool enhances efficiency and reduces the risk of errors associated with manual copying and pasting. With support for a wide range of programming languages and customizable file types, it adapts to your specific needs, making it an essential addition to any developer's toolkit.
+In a development environment, managing multiple code files can be a cumbersome task. The "Simple Code Combiner" app streamlines your workflow by allowing you to effortlessly combine various code files into a single output while labeling each file with its extension, all with just one click. Whether you're preparing scripts for deployment, consolidating code for testing, Feeding your code to LLMs for retrieval-augmented generation (RAG)., or simply organizing your projects, this free and open-source GUI tool enhances efficiency and reduces the risk of errors associated with manual copying and pasting. With support for a wide range of programming languages, customizable file types, **and now, AI-powered summarization with local LLM support**, it adapts to your specific needs, making it an essential addition to any developer's toolkit.
 
 <small><i>Code Combiner has been tested and produced in a Windows environment. If you are using a different platform (Linux or Mac), you can technically build the application in the respective environment using the provided source code.</i></small>
 
 ## Features
 
 - ✅ **Streamlined for AI:** With a single click, all your code is gathered in one location, simplifying the process of feeding it to AI / LLM.
+- ✅ **AI-Powered Summarization:** Quickly summarize combined code using popular AI providers like OpenAI, Google Gemini, Mistral AI, Anthropic, **and now with support for local LLMs (e.g., Ollama, LM Studio etc)**.
+- ✅ **Local LLM Support:** Use local LLMs by providing their API base, model, and API Key.
+- ✅ **Custom Model Support:** User can now manually add custom model name or select any model from list
+- ✅ **Input/Output Token Limit**: Provide input and output token limit for your AI provider
+- ✅ **Token Count:** Displays the total token count of the combined text.
 - ✅ **Simple GUI:** Intuitive drag-and-drop interface for easy file selection.
 - ✅ **Automatic Labeling:** Automatically labels each file with its extension for clarity and organization, making it easier for AI to identify each file.
 - ✅ **Flexible File Support:** Accepts a wide range of programming languages and code-related file extensions.
@@ -25,6 +31,7 @@ In a development environment, managing multiple code files can be a cumbersome t
 - ✅ **Copy to Clipboard:** Copies the combined content to the clipboard with one click.
 - ✅ **Save Combined Output:** Saves the combined text to a single .txt file.
 - ✅ **Always on Top:** Keeps the application window in front of all other windows for easy access to all your code files.
+- ✅ **Configuration**: Added a dedicated configuration dialog for AI providers, allowing users to easily set API keys, API bases, organization IDs, and choose the preferred model.
 
 ---
 
@@ -43,7 +50,7 @@ In a development environment, managing multiple code files can be a cumbersome t
 To run the program:
 
 - Python 3.8+ installed (if running from source).
-- TkinterDnD2 and ttkbootstrap installed as dependencies
+- TkinterDnD2, ttkbootstrap and `requests` installed as dependencies
 
 ### Installation
 
@@ -63,7 +70,7 @@ To run the program:
     ```
 2.  Install dependencies:
     ```bash
-    pip install tkinterdnd2 ttkbootstrap
+    pip install -r requirements.txt
     ```
 3.  Run the application:
     ```bash
@@ -91,6 +98,11 @@ To run the program:
 - Click the 'Copy to Clipboard' button to copy the combined content to the clipboard.
 - Use the 'File -> Save Combined File' option to save the combined content to a file.
 
+### AI Summarize:
+
+- Click the 'AI Summarize' button to generate a summary of the combined text using a configured AI provider. The progress bar will show the summarization process.
+- Configure your AI provider via `Preferences -> AI Configuration`
+
 ## Building from Source with PyInstaller
 
 To create a standalone executable for the `CodeCombiner` application (which uses `tkinterdnd2` for drag-and-drop functionality), follow these instructions. It is crucial to complete each step carefully for a successful build.
@@ -104,20 +116,16 @@ To create a standalone executable for the `CodeCombiner` application (which uses
     pip install pyinstaller
     ```
 
-3.  **`tkinterdnd2`:** Ensure you have `tkinterdnd2` installed:
-    ```bash
-    pip install tkinterdnd2
-    ```
-
 **Steps:**
 
 1.  **Prepare Project Files:** Ensure your main project file (`main.py`) and the hook file (`hook-tkinterdnd2.py`) are in the **same directory**.
 
 2.  **Obtain `hook-tkinterdnd2.py`:** Download `hook-tkinterdnd2.py` and save it in the same directory as your `main.py` file. The original file (under MIT License) can be obtained from:
+````
 
-```
- https://github.com/pmgagne/tkinterdnd2/blob/master/hook-tkinterdnd2.py
-```
+https://github.com/pmgagne/tkinterdnd2/blob/master/hook-tkinterdnd2.py
+
+````
 
     *Note: If you are working with an updated version or fork, make sure to use the corresponding hook file (if needed).*
 
@@ -127,13 +135,13 @@ _A modified version of the hook file that resolves certain issues can be used fr
 
    ```bash
    pyinstaller -F --additional-hooks-dir=. --onefile --windowed --icon=app.ico CodeCombiner.py
-   ```
+````
 
-   - **`-F` or `--onefile`**: Creates a single, self-contained executable file.
-   - **`--additional-hooks-dir=.`**: Tells PyInstaller to use the `hook-tkinterdnd2.py` file in the current directory to correctly include `tkinterdnd2` files.
-   - **`--windowed`**: Creates an executable without a console window, suitable for GUI applications.
-   - **`--icon=app.ico`**: For the exe icon.
-   - **`CodeCombiner.py`**: Specifies your main Python script file.
+- **`-F` or `--onefile`**: Creates a single, self-contained executable file.
+- **`--additional-hooks-dir=.`**: Tells PyInstaller to use the `hook-tkinterdnd2.py` file in the current directory to correctly include `tkinterdnd2` files.
+- **`--windowed`**: Creates an executable without a console window, suitable for GUI applications.
+- **`--icon=app.ico`**: For the exe icon.
+- **`CodeCombiner.py`**: Specifies your main Python script file.
 
 4. **Locate the Executable:** After a successful build, the executable file will be located in the `dist` subdirectory within your project directory.
 
@@ -155,8 +163,10 @@ _A modified version of the hook file that resolves certain issues can be used fr
 
 These instructions are partially based on the information available in the `tkinterdnd2` project's page on PyPI ([https://pypi.org/project/tkinterdnd2/](https://pypi.org/project/tkinterdnd2/)) and with thanks to the advice and tips of @Matthias W (https://stackoverflow.com/a/78833056).
 
+## Roadmap
+
+- Support for CLI interface
+
 ## License
 
 - "Simple Code Combiner" uses the GPLv3 license
-
-Feel free to open an issue to suggest more features or report bugs!
