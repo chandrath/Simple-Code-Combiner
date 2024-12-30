@@ -108,18 +108,7 @@ class AIConfigurationDialog:
         provider_config = self.all_prefs.get(provider_name, {})
         models_for_provider = self.models_data.get(provider_name, {})
 
-        # Custom Model Input
-        custom_model_frame = ttk.Frame(frame)
-        config_widgets["custom_model_enabled_var"] = tk.BooleanVar(value=provider_config.get("custom_model_enabled", False))
-        custom_checkbox = ttk.Checkbutton(custom_model_frame, text="Custom Model", variable=config_widgets["custom_model_enabled_var"], command=lambda: self.toggle_custom_model(provider_name))
-        custom_checkbox.pack(side="left", padx=5)
-        custom_model_entry = ttk.Entry(custom_model_frame, name="custom_model")
-        custom_model_entry.insert(0, provider_config.get("custom_model", ""))
-        custom_model_entry.pack(side="left", fill="x", expand=True, padx=5)
-        custom_model_frame.pack(fill="x", padx=10, pady=5)
-        config_widgets["custom_model"] = custom_model_entry
-
-        # Model Selection
+       # Model Selection
         if provider_name in self.models_data:
             model_frame = ttk.Frame(frame)
             ttk.Label(model_frame, text="Model").pack(side="left", padx=5)
@@ -137,14 +126,25 @@ class AIConfigurationDialog:
             config_widgets["model"] = model_dropdown
             config_widgets["model_var"] = model_var
 
+         # Custom Model Input
+        custom_model_frame = ttk.Frame(frame)
+        config_widgets["custom_model_enabled_var"] = tk.BooleanVar(value=provider_config.get("custom_model_enabled", False))
+        custom_checkbox = ttk.Checkbutton(custom_model_frame, text="Custom Model", variable=config_widgets["custom_model_enabled_var"], command=lambda: self.toggle_custom_model(provider_name))
+        custom_checkbox.pack(side="left", padx=5)
+        custom_model_entry = ttk.Entry(custom_model_frame, name="custom_model")
+        custom_model_entry.insert(0, provider_config.get("custom_model", ""))
+        custom_model_entry.pack(side="left", fill="x", expand=True, padx=5)
+        custom_model_frame.pack(fill="x", padx=10, pady=5)
+        config_widgets["custom_model"] = custom_model_entry
+
         # Input Token Limit
         input_limit_frame = ttk.Frame(frame)
-        config_widgets["input_token_limit_enabled_var"] = tk.BooleanVar(value=provider_config.get("input_token_limit_enabled", False))
+        config_widgets["input_token_limit_enabled_var"] = tk.BooleanVar(value=provider_config.get("input_token_limit_enabled", True)) # Set default to True
         input_checkbox = ttk.Checkbutton(input_limit_frame, text="Enable Input Token Limit", variable=config_widgets["input_token_limit_enabled_var"])
         input_checkbox.pack(side="left", padx=5)
         ttk.Label(input_limit_frame, text="Limit:").pack(side="left", padx=5)
         input_limit_entry = ttk.Entry(input_limit_frame, name="input_token_limit")
-        input_limit_entry.insert(0, provider_config.get("input_token_limit", ""))
+        input_limit_entry.insert(0, provider_config.get("input_token_limit", "1024")) # Set default limit to 1024
         input_limit_entry.pack(side="left", fill="x", expand=True, padx=5)
         input_limit_frame.pack(fill="x", padx=10, pady=5)
         config_widgets["input_token_limit"] = input_limit_entry
@@ -269,10 +269,11 @@ class AIConfigurationDialog:
                             if default_value:
                                 widget.insert(0, default_value)
                     #Reset to deafult
-                    self.config_widgets[provider_name]["input_token_limit_enabled_var"].set(False)
+                    self.config_widgets[provider_name]["input_token_limit_enabled_var"].set(True)
                     self.config_widgets[provider_name]["output_token_limit_enabled_var"].set(False)
                     self.config_widgets[provider_name]["custom_model_enabled_var"].set(False)
                     self.config_widgets[provider_name]["custom_model"].delete(0, tk.END)
+                    self.config_widgets[provider_name]["input_token_limit"].insert(0, "1024") # Reset input token limit to 1024
                     if "model_var" in self.config_widgets[provider_name]:
                         sorted_models = sorted(self.models_data[provider_name]['models'])
                         self.config_widgets[provider_name]["model_var"].set(sorted_models[0] if sorted_models else "")
