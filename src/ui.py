@@ -1,4 +1,5 @@
 # ui.py
+# ui.py
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinterdnd2 import DND_FILES
@@ -40,7 +41,14 @@ class FileCombinerApp:
         # Create a text area to show dropped files
         self.text_area = tk.Text(self.frame, height=10, width=50, wrap=tk.WORD)
         self.text_area.pack(pady=10, fill=tk.BOTH, expand=True)
-        
+
+        # **New: Error/Warning display area**
+        self.error_frame = ttk.Frame(self.frame, padding=5)
+        self.error_frame.pack(fill=tk.X, pady=(0, 5))
+        self.error_label = ttk.Label(self.error_frame, text="", foreground="red", wraplength=280)
+        self.error_label.pack(fill=tk.X)
+        self.error_label.grid_propagate(False) # Prevent resizing based on content
+
         # Create a button to summarize text
         self.summarize_button = ttk.Button(self.frame, text="AI Summarize", command=self.summarize_combined_text, state=tk.DISABLED)
         self.summarize_button.pack(pady=5)
@@ -48,7 +56,6 @@ class FileCombinerApp:
         # Create a button to combine files
         self.combine_button = ttk.Button(self.frame, text="Combine Files", command=self.combine_files)
         self.combine_button.pack(pady=5)
-
 
         # Create a button to copy combined text to clipboard
         self.copy_button = ttk.Button(self.frame, text="Copy to Clipboard", command=self.copy_to_clipboard, state=tk.DISABLED)
@@ -91,6 +98,7 @@ class FileCombinerApp:
         if self.backend.is_supported_file(file):
             self.backend.add_file_path(file)
             self.text_area.insert(tk.END, f"{file}\n")
+            self.clear_error() # Clear any previous error
         else:
             self.display_error(f"Unsupported extension - {file}. If it's a code file, use 'Preferences -> Manage Extensions' to add it.")
 
@@ -111,10 +119,12 @@ class FileCombinerApp:
             self.open_files()
 
     def display_error(self, message):
-        self.text_area.insert(tk.END, f"Error: {message}\n", "error")
-        self.text_area.tag_config("error", foreground="red")
+        self.error_label.config(text=message)
         logging.error(message)
-    
+
+    def clear_error(self):
+        self.error_label.config(text="")
+
     def summarize_combined_text(self):
         combined_content = self.text_area.get(1.0, tk.END).strip()
         if not combined_content:
@@ -152,6 +162,7 @@ class FileCombinerApp:
         self.copy_button.config(state=tk.DISABLED)
         self.menu.disable_save()
         self.summarize_button.config(state=tk.DISABLED)
+        self.clear_error()
         logging.info("Text area cleared.")
 
     def save_combined_file(self):
