@@ -63,14 +63,19 @@ class FileCombinerApp:
         self.button_frame.pack(fill=tk.X, padx=10, pady=(0, 5))
         self.button_frame.columnconfigure(0, weight=1)
         self.button_frame.columnconfigure(1, weight=1)
+        self.button_frame.columnconfigure(2, weight=0) # For edit button
 
         # AI Summarize button (moved and styled)
         self.summarize_button = ttk.Button(self.button_frame, text="AI Summarize", command=self.summarize_combined_text, state=tk.DISABLED, style="secondary.Outline.TButton", padding=2)
         self.summarize_button.grid(row=0, column=0, sticky="w")
 
+        # Edit button
+        self.edit_button = ttk.Button(self.button_frame, text="Edit", command=self.open_edit_files_popup, state=tk.DISABLED)
+        self.edit_button.grid(row=0, column=1, sticky="e", padx=(0,5))
+
         # Clear button (moved and styled)
         self.clear_button = ttk.Button(self.button_frame, text="Clear", command=self.clear_text, style="danger.Outline.TButton", padding=2)
-        self.clear_button.grid(row=0, column=1, sticky="e")
+        self.clear_button.grid(row=0, column=2, sticky="e")
 
         # **New: Error/Warning display area**
         self.error_frame = ttk.Frame(self.frame, padding=5)
@@ -117,10 +122,13 @@ class FileCombinerApp:
                 self.import_file(path)
 
     def import_folder(self, folder_path):
+        files_added = False
         for file_path in self.backend.get_files_from_folder(folder_path):
             self.import_file(file_path)
-        if file_path:  # Enable combine button if files were added
+            files_added = True
+        if files_added:
             self.combine_button.config(state=tk.NORMAL)
+            self.edit_button.config(state=tk.NORMAL)
 
     def import_file(self, file_path):
         if self.backend.is_supported_file(file_path):
@@ -137,13 +145,15 @@ class FileCombinerApp:
 
             self.clear_error()  # Clear any previous error
             self.combine_button.config(state=tk.NORMAL)  # Enable combine button
+            self.edit_button.config(state=tk.NORMAL)
         else:
             self.display_error(f"Unsupported extension - {file_path}. If it's a code file, use 'Preferences -> Manage Extensions' to add it.")
 
     def open_files(self):
         files = filedialog.askopenfilenames(filetypes=[("All files", "*.*")])
-        for file in files:
-            self.import_file(file)
+        if files:
+            for file in files:
+                self.import_file(file)
 
     def open_folder(self):
         folder = filedialog.askdirectory()
@@ -162,6 +172,46 @@ class FileCombinerApp:
 
     def clear_error(self):
         self.error_label.config(text="", foreground="red")
+
+    def open_edit_files_popup(self):
+        if not self.backend.file_paths:
+            messagebox.showinfo("No Files", "No files added yet.")
+            return
+
+        popup = tk.Toplevel(self.root)
+        popup.title("Edit Files")
+
+        frame = ttk.Frame(popup, padding=10)
+        frame.pack(expand=True, fill=tk.BOTH)
+
+        for file_path in list(self.backend.file_paths):  # Iterate over a copy
+            file_frame = ttk.Frame(frame)
+            file_frame.pack(fill=tk.X, pady=2)
+
+            file_name = os.path.basename(file_path)
+            ttk.Label(file_frame, text=file_name).pack(side=tk.LEFT, expand=True, fill=tk.X)
+
+            remove_button = ttk.Button(file_frame, text="❌", width=3, command=lambda path=file_path: self.remove_file(path, popup))
+            remove_button.pack(side=tk.RIGHT)
+
+    def remove_file(self, file_path, popup):
+        if file_path in self.backend.file_paths:
+            self.backend.file_paths.remove(file_path)
+
+            # Update the text area
+            self.text_area.delete(1.0, tk.END)
+            for path in self.backend.file_paths:
+                file_name = os.path.basename(path)
+                self.text_area.insert(tk.END, f"{file_name} ", "filename")
+                self.text_area.insert(tk.END, f"({path})\n", "filepath")
+
+            # Reopen the popup to refresh the list (simplest way)
+            popup.destroy()
+            self.open_edit_files_popup()
+
+            if not self.backend.file_paths:
+                self.edit_button.config(state=tk.DISABLED)
+                self.combine_button.config(state=tk.DISABLED)
 
     def summarize_combined_text(self):
         combined_content = self.text_area.get(1.0, tk.END).strip()
@@ -191,6 +241,7 @@ class FileCombinerApp:
         self.download_button.config(state=tk.NORMAL)
         self.menu.enable_save()
         self.summarize_button.config(state=tk.NORMAL)
+        self.edit_button.config(state=tk.DISABLED)
 
         # Show success message
         self.error_label.config(text="Provided files now combined. You can copy to clipboard or save the file.", foreground="green")
@@ -212,8 +263,9 @@ class FileCombinerApp:
         self.download_button.config(state=tk.DISABLED)
         self.menu.disable_save()
         self.summarize_button.config(state=tk.DISABLED)
+        self.edit_button.config(state=tk.DISABLED)
         self.clear_error()
-        self.combine_button.config(state=tk.NORMAL) # Enable combine button
+        self.combine_button.config(state=tk.DISABLED)
         self.token_count_label.config(text="") # Clear token count
         logging.info("Text area cleared.")
 
