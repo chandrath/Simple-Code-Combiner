@@ -101,7 +101,7 @@ class FileCombinerApp:
         self.copy_button.pack(pady=5)
 
         # Download button (icon only) - moved
-        self.download_button = ttk.Button(self.frame, text="Download ⤓", command=self.save_combined_file, state=tk.DISABLED, width=10)  # Changed text and adjusted width
+        self.download_button = ttk.Button(self.frame, text="⤓ Save", command=self.save_combined_file, state=tk.DISABLED, width=6)  # Changed text and adjusted width
         self.download_button.pack(pady=5)
 
         # Progress bar at the bottom
