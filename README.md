@@ -155,7 +155,7 @@ _A modified version of the hook file that resolves certain issues can be used fr
 3. **Build with PyInstaller:** Open a terminal or command prompt in the same directory where your project files are located. Then, execute the following PyInstaller command:
 
    ```bash
-   pyinstaller -F --additional-hooks-dir=. --onefile --windowed --icon=app.ico CodeCombiner.py
+   pyinstaller -F --additional-hooks-dir=. --onefile --windowed --icon=app.ico --add-data "models.json:." main.py
    ```
 
    - **`-F` or `--onefile`**: Creates a single, self-contained executable file.
