@@ -38,7 +38,7 @@ In a development environment, managing multiple code files can be a cumbersome t
 
 ### Simple User Interface
 
-![Code Combiner UI](https://i.imgur.com/iDTrivs.png)
+![Code Combiner UI](https://i.imgur.com/NZV4KZs.png)
 
 ---
 
