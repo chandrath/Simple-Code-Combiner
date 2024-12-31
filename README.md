@@ -73,7 +73,7 @@ To run the program:
     ```
 3.  Run the application:
     ```bash
-    python main.py
+    python CodeCombiner.py
     ```
 
 ## Usage
@@ -103,6 +103,23 @@ To run the program:
 - Configure your AI provider via `Preferences -> AI Configuration`
 - **Important:** Your text will be processed by the selected AI provider and will be subject to their respective privacy policies.
 
+## Privacy
+
+We believe strongly in protecting your privacy. Code Combiner does not collect or store any of your input data. It doesn't even collect general logs.
+If you choose to use a local LLM, your text processing is entirely on-device and there's no risk of your data being sent to a server.
+Note: If you choose to use a cloud-based LLM, refer to the AI provider's privacy policy and terms of service.
+
+## Local LLM Instructions:
+
+1. Download and install Ollama: (https://ollama.com/download)
+2. Choose an LLM from here. Recommended: Llama 3.1 8B (~8GB RAM or VRAM required).
+3. Run ollama run llama3.1:8b in your terminal to download and launch Llama 3.1.
+4. In Code Combiner, set the Local LLM provider with:
+   - API Key: ollama
+   - API Base URL: http://localhost:11434/v1
+   - API Model: llama3.1:8b
+     That's it! Enjoy Code Combiner 's ai summerzie fearutre with absolute privacy and no internet connection! 🎉
+
 ## Building from Source with PyInstaller
 
 To create a standalone executable for the `CodeCombiner` application (which uses `tkinterdnd2` for drag-and-drop functionality), follow these instructions. It is crucial to complete each step carefully for a successful build.
@@ -117,9 +134,8 @@ To create a standalone executable for the `CodeCombiner` application (which uses
     ```
 
 3.  **`tkinterdnd2`:** Ensure you have `tkinterdnd2` installed:
-
     ```bash
-     pip install tkinterdnd2
+    pip install tkinterdnd2
     ```
 
 **Steps:**
@@ -139,15 +155,14 @@ _A modified version of the hook file that resolves certain issues can be used fr
 3. **Build with PyInstaller:** Open a terminal or command prompt in the same directory where your project files are located. Then, execute the following PyInstaller command:
 
    ```bash
-   pyinstaller -F --additional-hooks-dir=. --onefile --windowed --icon=app.ico --add-data "models.json:." main.py
+   pyinstaller -F --additional-hooks-dir=. --onefile --windowed --icon=app.ico CodeCombiner.py
    ```
 
    - **`-F` or `--onefile`**: Creates a single, self-contained executable file.
    - **`--additional-hooks-dir=.`**: Tells PyInstaller to use the `hook-tkinterdnd2.py` file in the current directory to correctly include `tkinterdnd2` files.
    - **`--windowed`**: Creates an executable without a console window, suitable for GUI applications.
    - **`--icon=app.ico`**: For the exe icon.
-   - **`"--add-data "models.json"."`**: Includes this file with the app for AI configuration.
-   - **`main.py`**: Specifies your main Python script file.
+   - **`CodeCombiner.py`**: Specifies your main Python script file.
 
 4. **Locate the Executable:** After a successful build, the executable file will be located in the `dist` subdirectory within your project directory.
 
