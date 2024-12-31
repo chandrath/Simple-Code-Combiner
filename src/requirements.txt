@@ -6,6 +6,7 @@ Requests==2.32.3
 tiktoken==0.8.0
 tkinterdnd2==0.4.2
 ttkbootstrap==1.10.1
+pyinstaller-hooks-contrib==2024.10
 google-ai-generativelanguage==0.6.10
 google-api-core==2.24.0
 google-api-python-client==2.156.0
