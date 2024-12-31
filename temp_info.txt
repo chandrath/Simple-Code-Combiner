@@ -2,3 +2,9 @@ pyinstaller -F --additional-hooks-dir=. --onefile --windowed --icon=app.ico --ad
 
 
 http://localhost:11434
+
+pip freeze > requirements.txt (system wide)
+
+pipreqs scan the pkg and generate req wrt to project.
+"pip install pipreqs"
+"pipreqs . --savepath ./requirements.txt --encoding utf-8"

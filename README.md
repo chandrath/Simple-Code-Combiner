@@ -18,7 +18,7 @@ In a development environment, managing multiple code files can be a cumbersome t
 ## Features
 
 - ✅ **Streamlined for AI:** With a single click, all your code is gathered in one location, simplifying the process of feeding it to AI / LLM.
-- ✅ **AI-Powered Summarization:** Quickly summarize combined code using popular AI providers like OpenAI, Google Gemini, Mistral AI, Anthropic, **and now with support for local LLMs (e.g., Ollama, LM Studio etc)**.
+- ✅ **AI-Powered Summarization:** Quickly summarize combined code using popular AI providers like OpenAI, Google Gemini, Mistral AI, Anthropic, **and now with support for local LLMs (e.g., LM Studio, Ollama)**.
 - ✅ **Local LLM Support:** Use local LLMs by providing their API base, model, and API Key.
 - ✅ **Custom Model Support:** User can now manually add custom model name or select any model from list
 - ✅ **Input/Output Token Limit**: Provide input and output token limit for your AI provider
@@ -73,7 +73,7 @@ To run the program:
     ```
 3.  Run the application:
     ```bash
-    python CodeCombiner.py
+    python main.py
     ```
 
 ## Usage
@@ -101,6 +101,7 @@ To run the program:
 
 - Click the 'AI Summarize' button to generate a summary of the combined text using a configured AI provider. The progress bar will show the summarization process.
 - Configure your AI provider via `Preferences -> AI Configuration`
+- **Important:** Your text will be processed by the selected AI provider and will be subject to their respective privacy policies.
 
 ## Building from Source with PyInstaller
 
@@ -115,6 +116,12 @@ To create a standalone executable for the `CodeCombiner` application (which uses
     pip install pyinstaller
     ```
 
+3.  **`tkinterdnd2`:** Ensure you have `tkinterdnd2` installed:
+
+    ```bash
+     pip install tkinterdnd2
+    ```
+
 **Steps:**
 
 1.  **Prepare Project Files:** Ensure your main project file (`main.py`) and the hook file (`hook-tkinterdnd2.py`) are in the **same directory**.
@@ -122,9 +129,7 @@ To create a standalone executable for the `CodeCombiner` application (which uses
 2.  **Obtain `hook-tkinterdnd2.py`:** Download `hook-tkinterdnd2.py` and save it in the same directory as your `main.py` file. The original file (under MIT License) can be obtained from:
 
 ```
-
-https://github.com/pmgagne/tkinterdnd2/blob/master/hook-tkinterdnd2.py
-
+ https://github.com/pmgagne/tkinterdnd2/blob/master/hook-tkinterdnd2.py
 ```
 
     *Note: If you are working with an updated version or fork, make sure to use the corresponding hook file (if needed).*
@@ -134,16 +139,15 @@ _A modified version of the hook file that resolves certain issues can be used fr
 3. **Build with PyInstaller:** Open a terminal or command prompt in the same directory where your project files are located. Then, execute the following PyInstaller command:
 
    ```bash
-   pyinstaller -F --additional-hooks-dir=. --onefile --windowed --icon=app.ico CodeCombiner.py
+   pyinstaller -F --additional-hooks-dir=. --onefile --windowed --icon=app.ico --add-data "models.json:." main.py
    ```
 
-```
-
-- **`-F` or `--onefile`**: Creates a single, self-contained executable file.
-- **`--additional-hooks-dir=.`**: Tells PyInstaller to use the `hook-tkinterdnd2.py` file in the current directory to correctly include `tkinterdnd2` files.
-- **`--windowed`**: Creates an executable without a console window, suitable for GUI applications.
-- **`--icon=app.ico`**: For the exe icon.
-- **`CodeCombiner.py`**: Specifies your main Python script file.
+   - **`-F` or `--onefile`**: Creates a single, self-contained executable file.
+   - **`--additional-hooks-dir=.`**: Tells PyInstaller to use the `hook-tkinterdnd2.py` file in the current directory to correctly include `tkinterdnd2` files.
+   - **`--windowed`**: Creates an executable without a console window, suitable for GUI applications.
+   - **`--icon=app.ico`**: For the exe icon.
+   - **`"--add-data "models.json"."`**: Includes this file with the app for AI configuration.
+   - **`main.py`**: Specifies your main Python script file.
 
 4. **Locate the Executable:** After a successful build, the executable file will be located in the `dist` subdirectory within your project directory.
 
@@ -172,4 +176,3 @@ These instructions are partially based on the information available in the `tkin
 ## License
 
 - "Simple Code Combiner" uses the GPLv3 license
-```
