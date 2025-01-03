@@ -18,11 +18,7 @@ In a development environment, managing multiple code files can be a cumbersome t
 ## Features
 
 - ✅ **Streamlined for AI:** With a single click, all your code is gathered in one location, simplifying the process of feeding it to AI / LLM.
-- ✅ **AI-Powered Summarization:** Quickly summarize combined code using popular AI providers like OpenAI, Google Gemini, Mistral AI, Anthropic, **and now with support for local LLMs (e.g., LM Studio, Ollama)**.
-- ✅ **Local LLM Support:** Use local LLMs by providing their API base, model, and API Key.
-- ✅ **Custom Model Support:** User can now manually add custom model name or select any model from list
-- ✅ **Input/Output Token Limit**: Provide input and output token limit for your AI provider
-- ✅ **Token Count:** Displays the total token count of the combined text.
+- ✅ **AI-Powered Summarization (API Key Req):** Quickly summarize combined code using popular AI providers like OpenAI, Google Gemini, Mistral AI, Anthropic, **and now with support for local LLMs (e.g., LM Studio, Ollama)**.
 - ✅ **Simple GUI:** Intuitive drag-and-drop interface for easy file selection.
 - ✅ **Automatic Labeling:** Automatically labels each file with its extension for clarity and organization, making it easier for AI to identify each file.
 - ✅ **Flexible File Support:** Accepts a wide range of programming languages and code-related file extensions.

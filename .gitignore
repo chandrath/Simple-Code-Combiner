@@ -161,3 +161,5 @@ cython_debug/
 config.json
 preferences.json
 llm_config.json
+
+.codegpt

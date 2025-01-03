@@ -82,11 +82,15 @@ class FileCombinerMenu:
 
         text = tk.Text(about_window, wrap=tk.WORD, height=7, width=50)
         text.pack(padx=10, pady=10)
+        # Insert the static text
         text.insert(tk.END, "Code Combiner v0.9.1\nA simple tool to combine code files.\n\nDeveloped By: Shree\n")
-        text.config(state=tk.DISABLED)
+    
+        # Enable the text widget to add hyperlink
         text.config(state=tk.NORMAL)
         link = HyperlinkManager(text)
         text.insert(tk.END, "https://github.com/chandrath/Simple-Code-Combiner", link.add("https://github.com/chandrath/Simple-Code-Combiner"))
+    
+        # Disable the text widget again
         text.config(state=tk.DISABLED)
 
     def toggle_always_on_top(self):
